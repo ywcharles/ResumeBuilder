@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "setup": "rm -f database.db && sqlite3 database.db < setup.sql",
+    "test-data": "sqlite3 database.db < test-data.sql",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
