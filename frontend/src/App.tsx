@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
-
 import Hero from './pages/Hero'
 import Dashboard from './pages/Dashboard'
 import Navbar from './components/Navbar'
+import useUser from './Store/useUserStore'
 
 function App() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useUser()
 
   return (
     <div>
