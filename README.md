@@ -3,6 +3,7 @@
 ```npm i``` \
 ```npm run setup``` \
 ```npm run test-data``` \
+```npm run build``` \
 ```npm run start```
 
 # Setup frontend
