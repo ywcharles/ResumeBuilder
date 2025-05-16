@@ -17,6 +17,25 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+
+  const validateName = (name: string, field: 'firstName' | 'lastName') => {
+    if (!name.trim()) {
+      if (field === 'firstName') {
+        setFirstNameError('First name is required');
+      } else {
+        setLastNameError('Last name is required');
+      }
+      return false;
+    }
+    if (field === 'firstName') {
+      setFirstNameError('');
+    } else {
+      setLastNameError('');
+    }
+    return true;
+  };
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,6 +51,14 @@ const Register = () => {
     return true;
   };
 
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(e.target.value);
+  };
+
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(e.target.value);
+  };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
@@ -42,7 +69,11 @@ const Register = () => {
     setError('');
     setSuccess('');
     
-    if (!validateEmail(email)) {
+    const isFirstNameValid = validateName(firstName, 'firstName');
+    const isLastNameValid = validateName(lastName, 'lastName');
+    const isEmailValid = validateEmail(email);
+    
+    if (!isFirstNameValid || !isLastNameValid || !isEmailValid) {
       return;
     }
     
@@ -108,10 +139,16 @@ const Register = () => {
             id="firstName"
             type="text"
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleFirstNameChange}
+            onBlur={() => validateName(firstName, 'firstName')}
+            className={`w-full px-3 py-2 border ${
+              firstNameError ? 'border-red-500' : 'border-gray-300'
+            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
             required
           />
+          {firstNameError && (
+            <p className="mt-1 text-sm text-red-600">{firstNameError}</p>
+          )}
         </div>
         
         <div className="mb-4">
@@ -125,10 +162,16 @@ const Register = () => {
             id="lastName"
             type="text"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleLastNameChange}
+            onBlur={() => validateName(lastName, 'lastName')}
+            className={`w-full px-3 py-2 border ${
+              lastNameError ? 'border-red-500' : 'border-gray-300'
+            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
             required
           />
+          {lastNameError && (
+            <p className="mt-1 text-sm text-red-600">{lastNameError}</p>
+          )}
         </div>
         
         <div className="mb-4">
