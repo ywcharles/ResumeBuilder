@@ -16,11 +16,37 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    validateEmail(newEmail);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    
+    if (!validateEmail(email)) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -35,7 +61,6 @@ const Register = () => {
       
       setSuccess(`Registration successful! User ID: ${response.data.userId}`);
       
-      // Clear form fields
       setFirstName('');
       setLastName('');
       setEmail('');
@@ -43,10 +68,14 @@ const Register = () => {
       setPhoneNumber('');
       setLinkedinUrl('');
     } catch (error: any) {
-      setError(
-        error.response?.data?.error || 
-        'Registration failed. Please try again.'
-      );
+      if (error.response?.status === 400 && error.response?.data?.error === 'User with this email already exists') {
+        setError('This email is already registered. Please use a different email address or try logging in.');
+      } else {
+        setError(
+          error.response?.data?.error || 
+          'Registration failed. Please try again.'
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -114,10 +143,16 @@ const Register = () => {
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleEmailChange}
+            onBlur={() => validateEmail(email)}
+            className={`w-full px-3 py-2 border ${
+              emailError ? 'border-red-500' : 'border-gray-300'
+            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
             required
           />
+          {emailError && (
+            <p className="mt-1 text-sm text-red-600">{emailError}</p>
+          )}
         </div>
         
         <div className="mb-4">
