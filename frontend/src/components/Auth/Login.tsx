@@ -1,18 +1,10 @@
 import { useState } from 'react';
 import api from '../../api/axios';
-import useUser from '../../Store/useUserStore';
+import useUser, { User } from '../../Store/useUserStore';
 
 interface LoginResponse {
   message: string;
-  user: {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    created_at: string;
-    phone_number: string | null;
-    linkedin_url: string | null;
-  };
+  user: User;
 }
 
 const Login = () => {
@@ -33,10 +25,8 @@ const Login = () => {
         password,
       });
       
-      // Store the user ID in the global state
-      setUser(response.data.user.id.toString());
+      setUser(response.data.user);
       
-      // Clear form fields
       setEmail('');
       setPassword('');
     } catch (error: any) {
