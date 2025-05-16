@@ -1,9 +1,9 @@
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  first_name VARCHAR(20),
-  last_name VARCHAR(20),
-  email VARCHAR(50),
-  password_hash VARCHAR(20),
+  first_name VARCHAR(20) NOT NULL,
+  last_name VARCHAR(20) NOT NULL,
+  email VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(20) NOT NULL,
   created_at TIMESTAMP,
   phone_number VARCHAR(15),
   linkedin_url VARCHAR(100)
