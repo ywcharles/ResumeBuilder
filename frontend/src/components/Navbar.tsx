@@ -49,12 +49,17 @@ const Navbar = () => {
           {/* Right side */}
           <div className="hidden md:flex items-center">
             {user ? (
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition duration-150 ease-in-out"
-              >
-                Log out
-              </button>
+              <>
+                <span className="text-white mr-4">
+                  Welcome, {user.first_name}!
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition duration-150 ease-in-out"
+                >
+                  Log out
+                </button>
+              </>
             ) : (
               <Link
                 to="/auth"
