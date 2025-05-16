@@ -35,7 +35,6 @@ const Register = () => {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
-    validateEmail(newEmail);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
