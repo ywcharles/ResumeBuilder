@@ -9,7 +9,8 @@
     "test-data": "sqlite3 database.db < test-data.sql",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "watch": "nodemon --watch src --ext ts,json --exec \"npm run build && npm run start\""
   },
   "keywords": [],
   "author": "",
