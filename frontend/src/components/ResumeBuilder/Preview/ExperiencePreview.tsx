@@ -20,7 +20,7 @@ const ExperiencePreview = ({ section }: ExperiencePreviewProps) => {
         {experienceData.items.map((item) => (
           <div key={item.id} className="mb-3">
             <div className="flex justify-between items-baseline">
-              <h3 className="font-semibold text-gray-900">{item.company_name ?? item.company}</h3>
+              <h3 className="font-semibold text-gray-900">{item.company}</h3>
               <span className="text-sm text-gray-600">
                 {item.location ?? ''}
               </span>
@@ -29,7 +29,7 @@ const ExperiencePreview = ({ section }: ExperiencePreviewProps) => {
             <div className="flex justify-between items-baseline">
               <p className="text-gray-700 italic">{item.position ?? ''}</p>
               <span className="text-sm text-gray-600">
-                {formatDate(item.start_date ?? item.startDate)} - {item.current ? 'Present' : formatDate(item.end_date ?? item.endDate)}
+                {formatDate(item.startDate)} - {item.current ? 'Present' : formatDate(item.endDate)}
               </span>
             </div>
 

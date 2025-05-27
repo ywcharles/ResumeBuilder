@@ -38,8 +38,8 @@ const SectionEditor = ({ section, isActive, onClick }: SectionEditorProps) => {
     switch (section.type) {
       case SectionType.HEADER:
         return <HeaderEditor section={section} />;
-      case SectionType.SUMMARY:
-        return <SummaryEditor section={section} />;
+      // case SectionType.SUMMARY:
+      //   return <SummaryEditor section={section} />;
       case SectionType.EXPERIENCE:
         return <ExperienceEditor section={section} />;
       case SectionType.EDUCATION:
@@ -85,7 +85,7 @@ const SectionEditor = ({ section, isActive, onClick }: SectionEditorProps) => {
               <Settings size={16} className="text-gray-500" />
             </Button>
 
-            {section.type !== SectionType.HEADER && (
+            {/* {section.type !== SectionType.HEADER && (
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -95,7 +95,7 @@ const SectionEditor = ({ section, isActive, onClick }: SectionEditorProps) => {
               >
                 <Trash2 size={16} />
               </Button>
-            )}
+            )} */}
           </div>
         </div>
       </div>

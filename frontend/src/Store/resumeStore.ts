@@ -23,14 +23,14 @@ interface ResumeState {
 }
 
 const defaultHeaderSection: HeaderSection = {
-  fullName: 'Your Name',
-  title: 'Professional Title',
+  fullName: 'Your Name', //should be first_name + last_name
+  // title: 'Professional Title',
   contact: {
     email: 'your.email@example.com',
     phone: '(123) 456-7890',
-    location: 'City, State',
+    // location: 'City, State',
     linkedin: 'linkedin.com/in/yourprofile',
-    github: 'github.com/yourusername',
+    // github: 'github.com/yourusername',
   },
   showPhone: true,
   showLinkedIn: true,
@@ -38,16 +38,16 @@ const defaultHeaderSection: HeaderSection = {
   showFullUrls: false
 };
 
-const defaultSummarySection: SummarySection = {
-  text: 'Experienced professional with a track record of success in...'
-};
+// const defaultSummarySection: SummarySection = {
+//   text: 'Experienced professional with a track record of success in...'
+// };
 
 const defaultExperienceSection: ExperienceSection = {
   items: [
     {
       id: generateId(),
       company: 'Example Company',
-      position: 'Job Title',
+      position: 'Job Title', //Description
       location: 'City, State',
       startDate: '2020-01',
       endDate: '',
@@ -100,13 +100,13 @@ const initialSections: ResumeSection[] = [
     content: defaultHeaderSection,
     isVisible: true
   },
-  {
-    id: generateId(),
-    type: SectionType.SUMMARY,
-    title: 'Professional Summary',
-    content: defaultSummarySection,
-    isVisible: true
-  },
+  // {
+  //   id: generateId(),
+  //   type: SectionType.SUMMARY,
+  //   title: 'Professional Summary',
+  //   content: defaultSummarySection,
+  //   isVisible: true
+  // },
   {
     id: generateId(),
     type: SectionType.EXPERIENCE,
@@ -183,7 +183,7 @@ export const useResumeStore = create<ResumeState>((set) => ({
 function getDefaultTitleForType(type: SectionType): string {
   switch (type) {
     case SectionType.HEADER: return 'Contact Information';
-    case SectionType.SUMMARY: return 'Professional Summary';
+    // case SectionType.SUMMARY: return 'Professional Summary';
     case SectionType.EXPERIENCE: return 'Work Experience';
     case SectionType.EDUCATION: return 'Education';
     case SectionType.SKILLS: return 'Skills';
@@ -199,7 +199,7 @@ function getDefaultTitleForType(type: SectionType): string {
 function getDefaultContentForType(type: SectionType): any {
   switch (type) {
     case SectionType.HEADER: return defaultHeaderSection;
-    case SectionType.SUMMARY: return defaultSummarySection;
+    // case SectionType.SUMMARY: return defaultSummarySection;
     case SectionType.EXPERIENCE: return defaultExperienceSection;
     case SectionType.EDUCATION: return defaultEducationSection;
     case SectionType.SKILLS: return defaultSkillsSection;

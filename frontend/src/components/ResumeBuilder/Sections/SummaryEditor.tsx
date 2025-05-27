@@ -1,5 +1,4 @@
-import React from 'react';
-import { useResumeStore } from '../../../store/resumeStore';
+import { useResumeStore } from '../../../Store/resumeStore';
 import { ResumeSection, SummarySection } from '../../../types';
 
 interface SummaryEditorProps {
@@ -24,7 +23,7 @@ const SummaryEditor = ({ section }: SummaryEditorProps) => {
         <textarea
           value={summaryData.text}
           onChange={(e) => handleChange(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          className="p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base"
           rows={4}
           placeholder="Write a compelling professional summary..."
         />

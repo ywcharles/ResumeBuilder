@@ -47,7 +47,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           />
         </div>
         
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Professional Title
           </label>
@@ -58,7 +58,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+         */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
@@ -97,7 +97,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </div>
         )}
         
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Location
           </label>
@@ -108,7 +108,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             placeholder="City, State"
           />
-        </div>
+        </div> */}
         
         <div className="flex items-center">
           <input
