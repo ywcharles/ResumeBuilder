@@ -5,6 +5,7 @@ const userTabs = [
   { name: "Dashboard", path: "/dashboard" },
   { name: "Experiences", path: "/experiences" },
   { name: "Resumes", path: "/resumes" },
+  {name: "Resume Builder", path: "/resume-builder"}
 ];
 
 const navTabs = [

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import EditorPanel from '../components/ResumeBuilder/EditorPanel';
 import PreviewPanel from '../components/ResumeBuilder/PreviewPanel';
 
-function App() {
+function ResumeBuilder() {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
   return (
@@ -46,4 +46,4 @@ function App() {
   );
 }
 
-export default App;
+export default ResumeBuilder;
