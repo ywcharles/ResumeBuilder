@@ -9,12 +9,16 @@
     "test-data": "sqlite3 database.db < test-data.sql",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "watch": "nodemon --watch src --ext ts,json --exec \"npm run build && npm run start\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/cors": "^2.8.18",
+    "argon2": "^0.43.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"

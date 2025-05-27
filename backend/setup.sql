@@ -1,9 +1,9 @@
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  first_name VARCHAR(20),
-  last_name VARCHAR(20),
-  email VARCHAR(50),
-  password_hash VARCHAR(20),
+  first_name VARCHAR(20) NOT NULL,
+  last_name VARCHAR(20) NOT NULL,
+  email VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(20) NOT NULL,
   created_at TIMESTAMP,
   phone_number VARCHAR(15),
   linkedin_url VARCHAR(100)
@@ -48,8 +48,8 @@ CREATE TABLE experience (
   company_name VARCHAR(50),
   is_selected BOOLEAN DEFAULT 1,
   description VARCHAR(50),
-  end_date TIMESTAMP,
   start_date TIMESTAMP,
+  end_date TIMESTAMP,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES user(id),

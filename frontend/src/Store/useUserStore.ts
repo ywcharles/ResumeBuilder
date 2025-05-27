@@ -1,25 +1,35 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 
+export interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+  phone_number: string | null;
+  linkedin_url: string | null;
+}
+
 interface UserState {
-  user: string | null
-  setUser: (userId: string | null) => void
+  user: User | null
+  setUser: (user: User | null) => void
 }
 
 const useUserStore = create<UserState>((set) => ({
-  user: null, // User is userId in the database
-  setUser: (userId: string | null) => set({ user: userId }),
+  user: null,
+  setUser: (user: User | null) => set({ user }),
 }))
 
-const useUser = (userId?: string) => {
+const useUser = (initialUser?: User) => {
     const user = useUserStore((state) => state.user)
     const setUser = useUserStore((state) => state.setUser)
 
     useEffect(() => {
-        if (userId && !user) {
-          setUser(userId);
+        if (initialUser && !user) {
+          setUser(initialUser);
         }
-      }, [userId, user, setUser]);
+      }, [initialUser, user, setUser]);
     
     return [user, setUser] as const
   }

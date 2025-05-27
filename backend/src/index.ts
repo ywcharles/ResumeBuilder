@@ -4,6 +4,7 @@ import * as sqlite from "sqlite";
 import * as url from "url";
 import path, { parse } from "path";
 import initAuthRoutes from './routes/auth.js';
+import cors from 'cors';
 
 let __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 let dbfile = path.resolve(__dirname, "..", "database.db");
@@ -14,6 +15,11 @@ let db = await sqlite.open({
 
 const app = express();
 const PORT = 3001;
+
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 
 app.use(express.json());
 
