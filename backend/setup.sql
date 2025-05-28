@@ -48,6 +48,7 @@ CREATE TABLE experience (
   company_name VARCHAR(50),
   is_selected BOOLEAN DEFAULT 1,
   description VARCHAR(50),
+  location VARCHAR(50),
   start_date TIMESTAMP,
   end_date TIMESTAMP,
   created_at TIMESTAMP,
