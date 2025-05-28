@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Check, X } from 'lucide-react';
 import { useResumeStore } from '../../../Store/resumeStore';
 import { ResumeSection, ExperienceSection, ExperienceItem } from '../../../types';
 import Button from '../../../ui/Button';
@@ -31,6 +31,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+  };
+
+  const addFromBank = () => {
+    // TODO: Implement experience bank functionality
+    console.log('Add from bank - not implemented yet');
   };
   
   const updateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
@@ -119,13 +124,52 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
 
   return (
-    <div className="p-4 border-t border-gray-200">
-      <div className="space-y-6">
+    <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="mb-6">
+        <div className="flex gap-3 mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+          <Button
+            variant="outline"
+            leftIcon={<Plus size={16} />}
+            onClick={addExperience}
+            className="bg-white hover:bg-gray-50 border-gray-300"
+          >
+            Add New Experience
+          </Button>
+          
+          <Button
+            variant="outline"
+            leftIcon={<Plus size={16} />}
+            onClick={addFromBank}
+            className="bg-white hover:bg-gray-50 border-gray-300"
+            disabled
+            title="Experience bank feature coming soon"
+          >
+            From Bank
+          </Button>
+        </div>
+        
+        <h4 className="text-md font-medium text-gray-700 mb-3">Selected Experiences:</h4>
+      </div>
+
+      <div className="space-y-4">
         {experienceData.items.map((item, index) => (
-          <div key={item.id} className="p-4 border border-gray-200 rounded-md bg-gray-50">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium">Experience {index + 1}</h4>
-              {experienceData.items.length > 1 && (
+          <div key={item.id} className="p-4 border border-gray-200 rounded-md bg-white shadow-sm">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center gap-2">
+                <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h5 className="font-medium text-gray-800">{item.position} – {item.company}</h5>
+                  {item.location && (
+                    <p className="text-sm text-gray-600">{item.location}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {item.bullets.some(bullet => bullet.trim() === '') && (
+                  <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                    (unused)
+                  </span>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -133,34 +177,36 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                   onClick={() => removeExperience(index)}
                   title="Remove experience"
                 >
-                  <Trash2 size={16} />
+                  <X size={16} />
                 </Button>
-              )}
+              </div>
             </div>
             
             <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Company
-                </label>
-                <input
-                  type="text"
-                  value={item.company}
-                  onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Position
-                </label>
-                <input
-                  type="text"
-                  value={item.position}
-                  onChange={(e) => updateExperience(index, 'position', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company
+                  </label>
+                  <input
+                    type="text"
+                    value={item.company}
+                    onChange={(e) => updateExperience(index, 'company', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Position
+                  </label>
+                  <input
+                    type="text"
+                    value={item.position}
+                    onChange={(e) => updateExperience(index, 'position', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               </div>
               
               <div>
@@ -176,7 +222,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                 />
               </div>
               
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Start Date
@@ -202,67 +248,69 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     />
                   </div>
                 )}
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={item.current}
-                  onChange={(e) => updateExperience(index, 'current', e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-700">
-                  Current Position
-                </label>
+                
+                <div className="flex items-end">
+                  <div className="flex items-center h-10">
+                    <input
+                      type="checkbox"
+                      checked={item.current}
+                      onChange={(e) => updateExperience(index, 'current', e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 block text-sm text-gray-700">
+                      Current Position
+                    </label>
+                  </div>
+                </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Bullet Points
                 </label>
-                {item.bullets.map((bullet, bulletIndex) => (
-                  <div key={bulletIndex} className="flex items-start mb-2">
-                    <input
-                      type="text"
-                      value={bullet}
-                      onChange={(e) => updateBullet(index, bulletIndex, e.target.value)}
-                      className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Add accomplishment..."
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="ml-2 p-1 h-auto w-auto text-red-500 hover:text-red-700"
-                      onClick={() => removeBullet(index, bulletIndex)}
-                      disabled={item.bullets.length <= 1}
-                      title="Remove bullet"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<Plus size={16} />}
-                  onClick={() => addBullet(index)}
-                  className="mt-2"
-                >
-                  Add Bullet
-                </Button>
+                <div className="space-y-2">
+                  {item.bullets.map((bullet, bulletIndex) => (
+                    <div key={bulletIndex} className="flex items-start gap-2">
+                      <span className="text-gray-400 mt-2.5 text-xs">•</span>
+                      <input
+                        type="text"
+                        value={bullet}
+                        onChange={(e) => updateBullet(index, bulletIndex, e.target.value)}
+                        className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Add accomplishment..."
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1 h-auto w-auto text-red-500 hover:text-red-700 mt-1"
+                        onClick={() => removeBullet(index, bulletIndex)}
+                        disabled={item.bullets.length <= 1}
+                        title="Remove bullet"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    leftIcon={<Plus size={14} />}
+                    onClick={() => addBullet(index)}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 mt-2"
+                  >
+                    Add Bullet
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         ))}
         
-        <Button
-          variant="outline"
-          leftIcon={<Plus size={16} />}
-          onClick={addExperience}
-          className="w-full"
-        >
-          Add Experience
-        </Button>
+        {experienceData.items.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>No experiences selected. Use the buttons above to add your work experience.</p>
+          </div>
+        )}
       </div>
     </div>
   );
