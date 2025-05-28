@@ -106,7 +106,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
   };
 
   return (
-    <div className="p-4 border-t border-gray-200">
+    <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="space-y-6">
         {skillsData.categories.map((category, categoryIndex) => (
           <div key={category.id} className="p-4 border border-gray-200 rounded-md bg-gray-50">

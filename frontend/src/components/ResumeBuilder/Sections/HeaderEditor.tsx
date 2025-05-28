@@ -33,7 +33,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
   };
 
   return (
-    <div className="p-4 border-t border-gray-200">
+    <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

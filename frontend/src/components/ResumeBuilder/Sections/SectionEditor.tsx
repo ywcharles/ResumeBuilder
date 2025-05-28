@@ -52,56 +52,58 @@ const SectionEditor = ({ section, isActive, onClick }: SectionEditorProps) => {
   };
 
   return (
-    <SortableItem id={section.id} isActive={isActive} onClick={onClick}>
-      <div className="flex-1">
-        <div className="flex items-center justify-between w-full">
-          <h3 className="font-medium text-gray-800">{section.title}</h3>
-          
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-1 h-auto w-auto" 
-              onClick={handleToggleVisibility}
-              title={section.isVisible ? "Hide section" : "Show section"}
-            >
-              {section.isVisible ? (
-                <Eye size={16} className="text-gray-500" />
-              ) : (
-                <EyeOff size={16} className="text-gray-500" />
-              )}
-            </Button>
+    <div className="mb-4">
+      <SortableItem id={section.id} isActive={isActive} onClick={onClick}>
+        <div className="flex-1">
+          <div className="flex items-center justify-between w-full">
+            <h3 className="font-medium text-gray-800">{section.title}</h3>
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="p-1 h-auto w-auto" 
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              title="Edit section"
-            >
-              <Settings size={16} className="text-gray-500" />
-            </Button>
-
-            {/* {section.type !== SectionType.HEADER && (
+            <div className="flex items-center space-x-2">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-1 h-auto w-auto text-red-500 hover:text-red-700" 
-                onClick={handleRemoveSection}
-                title="Remove section"
+                className="p-1 h-auto w-auto" 
+                onClick={handleToggleVisibility}
+                title={section.isVisible ? "Hide section" : "Show section"}
               >
-                <Trash2 size={16} />
+                {section.isVisible ? (
+                  <Eye size={16} className="text-gray-500" />
+                ) : (
+                  <EyeOff size={16} className="text-gray-500" />
+                )}
               </Button>
-            )} */}
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-1 h-auto w-auto" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+                title="Edit section"
+              >
+                <Settings size={16} className="text-gray-500" />
+              </Button>
+
+              {/* {section.type !== SectionType.HEADER && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-1 h-auto w-auto text-red-500 hover:text-red-700" 
+                  onClick={handleRemoveSection}
+                  title="Remove section"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              )} */}
+            </div>
           </div>
         </div>
-      </div>
+      </SortableItem>
       
       {renderEditor()}
-    </SortableItem>
+    </div>
   );
 };
 
