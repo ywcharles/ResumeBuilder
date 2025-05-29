@@ -183,8 +183,6 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
   
   const removeExperience = (index: number) => {
-    if (experienceData.items.length <= 1) return;
-    
     const updatedItems = [...experienceData.items];
     updatedItems.splice(index, 1);
     
