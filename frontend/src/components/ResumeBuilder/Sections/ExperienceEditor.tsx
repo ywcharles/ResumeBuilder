@@ -46,10 +46,9 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
 
   const addExperienceFromBank = (bankExperience: ExperienceItem) => {
-    // Create a new experience item with a fresh ID for this resume
     const newItem: ExperienceItem = {
       ...bankExperience,
-      id: generateId(), // Generate new ID for this resume instance
+      id: generateId(),
     };
     
     const updatedContent: ExperienceSection = {
