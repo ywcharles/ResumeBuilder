@@ -196,6 +196,14 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     updateSectionContent(section.id, updatedContent);
   };
 
+  const isExperienceAlreadyAdded = (bankExperience: ExperienceItem): boolean => {
+    return experienceData.items.some(item => 
+      item.company === bankExperience.company &&
+      item.position === bankExperience.position &&
+      item.startDate === formatDateForMonthInput(bankExperience.startDate)
+    );
+  };
+
   return (
     <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="mb-6">
@@ -271,14 +279,24 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                           )}
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addExperienceFromBank(experience)}
-                        className="ml-3 bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
-                      >
-                        Add
-                      </Button>
+                      {(() => {
+                        const isAlreadyAdded = isExperienceAlreadyAdded(experience);
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addExperienceFromBank(experience)}
+                            disabled={isAlreadyAdded}
+                            className={`ml-3 ${
+                              isAlreadyAdded 
+                                ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed' 
+                                : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100'
+                            }`}
+                          >
+                            {isAlreadyAdded ? 'Added' : 'Add'}
+                          </Button>
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}
