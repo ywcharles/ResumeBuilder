@@ -425,28 +425,31 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                         readOnly={item.fromBank}
                         disabled={item.fromBank}
                       />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="p-1 h-auto w-auto text-red-500 hover:text-red-700 mt-1"
-                        onClick={() => removeBullet(index, bulletIndex)}
-                        disabled={item.bullets.length <= 1 || item.fromBank}
-                        title="Remove bullet"
-                      >
-                        <Trash2 size={14} />
-                      </Button>
+                      {!item.fromBank && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-1 h-auto w-auto text-red-500 hover:text-red-700 mt-1"
+                          onClick={() => removeBullet(index, bulletIndex)}
+                          disabled={item.bullets.length <= 1}
+                          title="Remove bullet"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      )}
                     </div>
                   ))}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    leftIcon={<Plus size={14} />}
-                    onClick={() => addBullet(index)}
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 mt-2"
-                    disabled={item.fromBank}
-                  >
-                    Add Bullet
-                  </Button>
+                  {!item.fromBank && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Plus size={14} />}
+                      onClick={() => addBullet(index)}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 mt-2"
+                    >
+                      Add Bullet
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
