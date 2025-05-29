@@ -18,8 +18,6 @@ const HeaderPreview = ({ section }: HeaderPreviewProps) => {
       items.push(<span key="phone">{contact.phone}</span>);
     }
     
-    items.push(<span key="location">{contact.location}</span>);
-    
     if (showLinkedIn && contact.linkedin) {
       items.push(
         <span key="linkedin">
