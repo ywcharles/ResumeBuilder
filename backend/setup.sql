@@ -41,6 +41,24 @@ CREATE TABLE coursework (
   FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+CREATE TABLE education (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  resume_id INTEGER NOT NULL,
+  institution VARCHAR(100) NOT NULL,
+  degree VARCHAR(100) NOT NULL,
+  field VARCHAR(100),
+  location VARCHAR(100),
+  start_date VARCHAR(10),
+  end_date VARCHAR(10),
+  gpa VARCHAR(10),
+  description TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES user(id),
+  FOREIGN KEY (resume_id) REFERENCES resume(id)
+);
+
 CREATE TABLE experience (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
