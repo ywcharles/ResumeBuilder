@@ -34,11 +34,11 @@ VALUES
 (1, 1, 'Database Systems', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (1, 1, 'Web Development', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(1, 1, 'Susquehanna International Group', 'Software Developer', '2023-09-01', '2024-09-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 1, 'The Stratagem Group', 'Software Engineer', '2022-09-01', '2023-08-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 1, 'Berkley Technology Services', 'Automation Engineer', '2021-09-01', '2022-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 1, 'Susquehanna International Group', 'Software Developer', 'Bala Cynwyd, PA', '2023-09-01', '2024-09-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 1, 'The Stratagem Group', 'Software Engineer', 'Philadelphia, PA', '2022-09-01', '2023-08-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 1, 'Berkley Technology Services', 'Automation Engineer', 'King of Prussia, PA', '2021-09-01', '2022-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO bullet_point (experience_id, content, order_num, created_at, updated_at)
 VALUES
@@ -150,33 +150,33 @@ VALUES
 (3, 2, 'Software Architecture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Work Experience for Frontend Resume
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(2, 2, 'URBN', 'Talent Analytics Co-Op', '2024-09-30', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'University of Pennsylvania', 'Operations Analysis Co-op', '2023-04-04', '2023-09-22', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 2, 'URBN', 'Talent Analytics Co-Op', 'Philadelphia, PA', '2024-09-30', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 2, 'University of Pennsylvania', 'Operations Analysis Co-op', 'Philadelphia, PA', '2023-04-04', '2023-09-22', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Work Experience for Data Resume
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(2, 3, 'URBN', 'Talent Analytics Co-Op', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'University of Pennsylvania', 'Operations Analysis Co-op', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 3, 'URBN', 'Talent Analytics Co-Op', 'Philadelphia, PA', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 'University of Pennsylvania', 'Operations Analysis Co-op', 'Philadelphia, PA', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Projects for Frontend Resume
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(2, 2, 'Project', 'AskVanguard', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'Project', 'Quackademics', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'Project', 'Pic-A-Recipe', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 2, 'Project', 'AskVanguard', 'Philadelphia, PA', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 2, 'Project', 'Quackademics', 'Philadelphia, PA', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 2, 'Project', 'Pic-A-Recipe', 'Philadelphia, PA', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Projects for Data Resume
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(2, 3, 'Project', 'Vanguard AI Assistant', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Project', 'Pic-A-Recipe', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Project', 'Skills.FYI', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Project', 'Expense Tracker', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Project', 'WebCam Rock-Paper-Scissor', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Project', 'Paper Scanner', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 3, 'Project', 'Vanguard AI Assistant', 'Philadelphia, PA', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 'Project', 'Pic-A-Recipe', 'Philadelphia, PA', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 'Project', 'Skills.FYI', 'Philadelphia, PA', '2024-10-01', '2025-03-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 'Project', 'Expense Tracker', 'Philadelphia, PA', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 'Project', 'WebCam Rock-Paper-Scissor', 'Philadelphia, PA', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 3, 'Project', 'Paper Scanner', 'Philadelphia, PA', '2023-04-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Bullet Points for Frontend Resume - URBN
 INSERT INTO bullet_point (experience_id, content, order_num, created_at, updated_at)
@@ -390,10 +390,10 @@ VALUES
 
 -- Insert experiences
 -- Note: Experience IDs will continue from the last ones (17 and 18 based on previous inserts)
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(3, 4, 'Raptor Defense Company', 'Software Engineer', '2024-11-01', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Holman', 'Fullstack Developer Co-Op', '2024-09-01', '2025-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 4, 'Raptor Defense Company', 'Software Engineer', 'King of Prussia, PA', '2024-11-01', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 4, 'Holman', 'Fullstack Developer Co-Op', 'King of Prussia, PA', '2024-09-01', '2025-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert bullet points for experiences
 -- Experience IDs are 17 and 18, and bullet_point IDs continue from previous inserts
@@ -411,11 +411,11 @@ VALUES
 (18, 'Revamped the user interface and modernized 10 outdated .NET web apps', 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert experiences for projects as regular experiences with company_name as 'Project'
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(3, 4, 'Project', 'RAG AI Chatbot', '2025-03-01', '2025-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Project', 'Wiki Game', '2024-06-01', '2024-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Project', 'CitySquats', '2023-09-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 4, 'Project', 'RAG AI Chatbot', 'King of Prussia, PA', '2025-03-01', '2025-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 4, 'Project', 'Wiki Game', 'King of Prussia, PA', '2024-06-01', '2024-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 4, 'Project', 'CitySquats', 'King of Prussia, PA', '2023-09-01', '2023-09-30', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert bullet points for project experiences
 INSERT INTO bullet_point (experience_id, content, order_num, created_at, updated_at)
@@ -434,10 +434,10 @@ VALUES
 (21, 'Awarded Temple Owlhack''s "Best Accessibility Hack" out of 250+ participants', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert experiences for activities
-INSERT INTO experience (user_id, resume_id, company_name, description, start_date, end_date, created_at, updated_at)
+INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
-(3, 4, 'Society of Asian Scientists and Engineers', 'Technical Coordinator', '2023-07-01', '2024-07-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'CodePath', 'Technical Fellow', '2022-12-01', '2023-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 4, 'Society of Asian Scientists and Engineers', 'Technical Coordinator', 'King of Prussia, PA', '2023-07-01', '2024-07-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 4, 'CodePath', 'Technical Fellow', 'King of Prussia, PA', '2022-12-01', '2023-03-31', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert any new tags that don't exist yet
 INSERT INTO tag (name)
