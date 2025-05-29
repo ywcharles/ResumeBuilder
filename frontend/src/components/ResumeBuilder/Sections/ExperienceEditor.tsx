@@ -1,15 +1,21 @@
 import { Plus, Trash2, Check, X } from 'lucide-react';
+import { useState } from 'react';
 import { useResumeStore } from '../../../Store/resumeStore';
 import { ResumeSection, ExperienceSection, ExperienceItem } from '../../../types';
 import Button from '../../../ui/Button';
 import { generateId } from '../../../utils/utils';
+import { useExperiences } from '../../../hooks/useExperiences';
+import useUser from '../../../Store/useUserStore';
 
 interface ExperienceEditorProps {
   section: ResumeSection;
 }
 
 const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
+  const [user] = useUser();
   const { updateSectionContent } = useResumeStore();
+  const { experienceBank, isLoading, error, fetchExperienceBank } = useExperiences();
+  const [showBank, setShowBank] = useState(false);
   const experienceData = section.content as ExperienceSection;
   
   const addExperience = () => {
@@ -21,7 +27,6 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
       startDate: '',
       endDate: '',
       current: true,
-      description: [],
       bullets: ['']
     };
     
@@ -34,8 +39,26 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
 
   const addFromBank = () => {
-    // TODO: Implement experience bank functionality
-    console.log('Add from bank - not implemented yet');
+    setShowBank(true);
+    if (user?.id) {
+      fetchExperienceBank();
+    }
+  };
+
+  const addExperienceFromBank = (bankExperience: ExperienceItem) => {
+    // Create a new experience item with a fresh ID for this resume
+    const newItem: ExperienceItem = {
+      ...bankExperience,
+      id: generateId(), // Generate new ID for this resume instance
+    };
+    
+    const updatedContent: ExperienceSection = {
+      ...experienceData,
+      items: [...experienceData.items, newItem]
+    };
+    
+    updateSectionContent(section.id, updatedContent);
+    setShowBank(false);
   };
   
   const updateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
@@ -141,12 +164,82 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
             leftIcon={<Plus size={16} />}
             onClick={addFromBank}
             className="bg-white hover:bg-gray-50 border-gray-300"
-            disabled
-            title="Experience bank feature coming soon"
+            disabled={!user}
+            title={!user ? "Please log in to use experience bank" : "Add from your experience bank"}
           >
             From Bank
           </Button>
         </div>
+
+        {/* Experience Bank Modal/Dropdown */}
+        {showBank && (
+          <div className="mb-6 p-4 bg-gray-50 border border-gray-300 rounded-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-md font-medium text-gray-700">Your Experience Bank</h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBank(false)}
+                className="p-1 h-auto w-auto text-gray-500 hover:text-gray-700"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+
+            {isLoading && (
+              <div className="text-center py-4 text-gray-500">
+                Loading your experiences...
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-4 text-red-500">
+                {error}
+              </div>
+            )}
+
+            {experienceBank && experienceBank.items.length > 0 ? (
+              <div className="space-y-3">
+                {experienceBank.items.map((experience) => (
+                  <div key={experience.id} className="p-3 bg-white border border-gray-200 rounded-md">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h5 className="font-medium text-gray-800">
+                          {experience.position} at {experience.company}
+                        </h5>
+                        <p className="text-sm text-gray-600">
+                          {experience.startDate} - {experience.current ? 'Present' : experience.endDate}
+                        </p>
+                        <div className="mt-2">
+                          {experience.bullets.slice(0, 2).map((bullet, index) => (
+                            <p key={index} className="text-sm text-gray-600">• {bullet}</p>
+                          ))}
+                          {experience.bullets.length > 2 && (
+                            <p className="text-xs text-gray-400">
+                              +{experience.bullets.length - 2} more bullet points
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addExperienceFromBank(experience)}
+                        className="ml-3 bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : experienceBank && experienceBank.items.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                No experiences found in your bank. Add some experiences first!
+              </div>
+            ) : null}
+          </div>
+        )}
         
         <h4 className="text-md font-medium text-gray-700 mb-3">Selected Experiences:</h4>
       </div>
