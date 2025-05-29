@@ -56,6 +56,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     const newItem: ExperienceItem = {
       ...bankExperience,
       id: generateId(),
+      fromBank: true,
     };
     
     const updatedContent: ExperienceSection = {
@@ -68,6 +69,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
   
   const updateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
+    if (experienceData.items[index].fromBank) {
+      return;
+    }
+    
     const updatedItems = [...experienceData.items];
     updatedItems[index] = {
       ...updatedItems[index],
@@ -88,6 +93,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
   
   const updateBullet = (experienceIndex: number, bulletIndex: number, value: string) => {
+    if (experienceData.items[experienceIndex].fromBank) {
+      return;
+    }
+    
     const updatedItems = [...experienceData.items];
     const updatedBullets = [...updatedItems[experienceIndex].bullets];
     updatedBullets[bulletIndex] = value;
@@ -106,6 +115,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
   
   const addBullet = (experienceIndex: number) => {
+    if (experienceData.items[experienceIndex].fromBank) {
+      return;
+    }
+    
     const updatedItems = [...experienceData.items];
     updatedItems[experienceIndex] = {
       ...updatedItems[experienceIndex],
@@ -121,6 +134,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   };
   
   const removeBullet = (experienceIndex: number, bulletIndex: number) => {
+    if (experienceData.items[experienceIndex].fromBank) {
+      return;
+    }
+    
     const updatedItems = [...experienceData.items];
     const updatedBullets = [...updatedItems[experienceIndex].bullets];
     updatedBullets.splice(bulletIndex, 1);
@@ -261,6 +278,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                   {item.location && (
                     <p className="text-sm text-gray-600">{item.location}</p>
                   )}
+                  {item.fromBank && (
+                    <span className="inline-block text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded mt-1">
+                      From Bank (Read-only)
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -291,7 +313,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     type="text"
                     value={item.company}
                     onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                      item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
+                    readOnly={item.fromBank}
+                    disabled={item.fromBank}
                   />
                 </div>
                 
@@ -303,7 +329,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     type="text"
                     value={item.position}
                     onChange={(e) => updateExperience(index, 'position', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                      item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
+                    readOnly={item.fromBank}
+                    disabled={item.fromBank}
                   />
                 </div>
               </div>
@@ -316,8 +346,12 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                   type="text"
                   value={item.location}
                   onChange={(e) => updateExperience(index, 'location', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                    item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                  }`}
                   placeholder="City, State"
+                  readOnly={item.fromBank}
+                  disabled={item.fromBank}
                 />
               </div>
               
@@ -330,7 +364,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     type="month"
                     value={item.startDate}
                     onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                      item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                    }`}
+                    readOnly={item.fromBank}
+                    disabled={item.fromBank}
                   />
                 </div>
                 
@@ -343,7 +381,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                       type="month"
                       value={item.endDate}
                       onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                        item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                      }`}
+                      readOnly={item.fromBank}
+                      disabled={item.fromBank}
                     />
                   </div>
                 )}
@@ -355,8 +397,9 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                       checked={item.current}
                       onChange={(e) => updateExperience(index, 'current', e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      disabled={item.fromBank}
                     />
-                    <label className="ml-2 block text-sm text-gray-700">
+                    <label className={`ml-2 block text-sm ${item.fromBank ? 'text-gray-400' : 'text-gray-700'}`}>
                       Current Position
                     </label>
                   </div>
@@ -375,15 +418,19 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                         type="text"
                         value={bullet}
                         onChange={(e) => updateBullet(index, bulletIndex, e.target.value)}
-                        className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        className={`flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                          item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                        }`}
                         placeholder="Add accomplishment..."
+                        readOnly={item.fromBank}
+                        disabled={item.fromBank}
                       />
                       <Button
                         variant="ghost"
                         size="sm"
                         className="p-1 h-auto w-auto text-red-500 hover:text-red-700 mt-1"
                         onClick={() => removeBullet(index, bulletIndex)}
-                        disabled={item.bullets.length <= 1}
+                        disabled={item.bullets.length <= 1 || item.fromBank}
                         title="Remove bullet"
                       >
                         <Trash2 size={14} />
@@ -396,6 +443,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     leftIcon={<Plus size={14} />}
                     onClick={() => addBullet(index)}
                     className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 mt-2"
+                    disabled={item.fromBank}
                   >
                     Add Bullet
                   </Button>
