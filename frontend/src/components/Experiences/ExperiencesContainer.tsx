@@ -17,7 +17,7 @@ const ExperiencesContainer = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useUser();
+  const [user] = useUser();
 
   useEffect(() => {
     const fetchExperiences = async () => {
