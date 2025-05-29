@@ -43,23 +43,7 @@ const defaultHeaderSection: HeaderSection = {
 // };
 
 const defaultExperienceSection: ExperienceSection = {
-  items: [
-    {
-      id: generateId(),
-      company: 'Example Company',
-      position: 'Job Title', //Description
-      location: 'City, State',
-      startDate: '2020-01',
-      endDate: '',
-      current: true,
-      description: [],
-      bullets: [
-        'Accomplished X, resulting in Y% improvement',
-        'Led project to deliver Z under budget and ahead of schedule',
-        'Collaborated with cross-functional teams to implement new system'
-      ]
-    }
-  ]
+  items: []
 };
 
 const defaultEducationSection: EducationSection = {
