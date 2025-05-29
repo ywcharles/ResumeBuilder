@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useResumeStore } from '../../../Store/resumeStore';
+import { useHeader } from '../../../hooks/useHeader';
 import { ResumeSection, HeaderSection } from '../../../types';
 
 interface HeaderEditorProps {
@@ -7,30 +9,69 @@ interface HeaderEditorProps {
 
 const HeaderEditor = ({ section }: HeaderEditorProps) => {
   const { updateSectionContent } = useResumeStore();
-  const headerData = section.content as HeaderSection;
+  const { headerData, isLoading, error, updateHeaderData } = useHeader();
+  const headerContent = section.content as HeaderSection;
   
-  const handleChange = (field: string, value: string | boolean) => {
+  useEffect(() => {
+    if (headerData && (!headerContent.fullName || headerContent.fullName === 'Your Name')) {
+      updateSectionContent(section.id, headerData);
+    }
+  }, [headerData, section.id, updateSectionContent, headerContent.fullName]);
+  
+  const handleChange = async (field: string, value: string | boolean) => {
     const updatedContent = { 
-      ...headerData, 
+      ...headerContent, 
       [field]: value 
     };
     
     updateSectionContent(section.id, updatedContent);
+    
+    try {
+      await updateHeaderData(updatedContent);
+    } catch (error) {
+      console.error('Failed to save header changes:', error);
+    }
   };
   
-  const handleContactChange = (field: string, value: string) => {
+  const handleContactChange = async (field: string, value: string) => {
     const updatedContact = { 
-      ...headerData.contact, 
+      ...headerContent.contact, 
       [field]: value 
     };
     
     const updatedContent = { 
-      ...headerData, 
+      ...headerContent, 
       contact: updatedContact 
     };
     
     updateSectionContent(section.id, updatedContent);
+    
+    try {
+      await updateHeaderData(updatedContent);
+    } catch (error) {
+      console.error('Failed to save header changes:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500">Loading header data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -41,7 +82,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
           <input
             type="text"
-            value={headerData.fullName}
+            value={headerContent.fullName}
             onChange={(e) => handleChange('fullName', e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
@@ -53,7 +94,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
           <input
             type="text"
-            value={headerData.title || ''}
+            value={headerContent.title || ''}
             onChange={(e) => handleChange('title', e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
@@ -65,7 +106,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
           <input
             type="email"
-            value={headerData.contact.email}
+            value={headerContent.contact.email}
             onChange={(e) => handleContactChange('email', e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
@@ -74,7 +115,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={headerData.showPhone}
+            checked={headerContent.showPhone}
             onChange={(e) => handleChange('showPhone', e.target.checked)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
@@ -83,14 +124,14 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
         </div>
         
-        {headerData.showPhone && (
+        {headerContent.showPhone && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Phone
             </label>
             <input
               type="tel"
-              value={headerData.contact.phone}
+              value={headerContent.contact.phone}
               onChange={(e) => handleContactChange('phone', e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
@@ -103,7 +144,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
           <input
             type="text"
-            value={headerData.contact.location}
+            value={headerContent.contact.location}
             onChange={(e) => handleContactChange('location', e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             placeholder="City, State"
@@ -113,7 +154,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={headerData.showLinkedIn}
+            checked={headerContent.showLinkedIn}
             onChange={(e) => handleChange('showLinkedIn', e.target.checked)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
@@ -122,14 +163,14 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
         </div>
         
-        {headerData.showLinkedIn && (
+        {headerContent.showLinkedIn && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               LinkedIn
             </label>
             <input
               type="text"
-              value={headerData.contact.linkedin || ''}
+              value={headerContent.contact.linkedin || ''}
               onChange={(e) => handleContactChange('linkedin', e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               placeholder="linkedin.com/in/yourprofile"
@@ -140,7 +181,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={headerData.showGitHub}
+            checked={headerContent.showGitHub}
             onChange={(e) => handleChange('showGitHub', e.target.checked)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
@@ -149,14 +190,14 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
           </label>
         </div>
         
-        {headerData.showGitHub && (
+        {headerContent.showGitHub && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               GitHub
             </label>
             <input
               type="text"
-              value={headerData.contact.github || ''}
+              value={headerContent.contact.github || ''}
               onChange={(e) => handleContactChange('github', e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               placeholder="github.com/yourusername"
@@ -167,7 +208,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={headerData.showFullUrls}
+            checked={headerContent.showFullUrls}
             onChange={(e) => handleChange('showFullUrls', e.target.checked)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
