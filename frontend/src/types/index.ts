@@ -61,6 +61,7 @@ export interface ExperienceItem {
   endDate: string;
   current: boolean;
   bullets: string[];
+  fromBank?: boolean;
 }
 
 export interface ExperienceSection {
