@@ -4,6 +4,7 @@ import * as sqlite from "sqlite";
 import * as url from "url";
 import path, { parse } from "path";
 import initAuthRoutes from './routes/auth.js';
+import initExperienceRoutes from './routes/experience.js';
 import cors from 'cors';
 
 let __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -25,6 +26,7 @@ app.use(express.json());
 
 // Initialize routes
 app.use("/auth", initAuthRoutes(db));
+app.use("/api/experiences", initExperienceRoutes(db));
 
 app.get('/api/hello', (_req, res) => {
   res.json({ message: 'Hello from the backend!' });
