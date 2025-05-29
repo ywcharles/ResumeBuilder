@@ -20,6 +20,12 @@ const SectionEditor = ({ section, isActive, onClick }: SectionEditorProps) => {
   const { toggleSectionVisibility, removeSection } = useResumeStore();
   const [isExpanded, setIsExpanded] = React.useState(false);
 
+  React.useEffect(() => {
+    if (isActive) {
+      setIsExpanded(true);
+    }
+  }, [isActive]);
+
   const handleToggleVisibility = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleSectionVisibility(section.id);
