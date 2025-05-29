@@ -11,6 +11,31 @@ interface ExperienceEditorProps {
   section: ResumeSection;
 }
 
+const formatDateForMonthInput = (dateString: string): string => {
+  if (!dateString) return '';
+  
+  try {
+    let date: Date;
+    
+    if (/^\d{4}-\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+    
+    date = new Date(dateString);
+    
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+};
+
 const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   const [user] = useUser();
   const { updateSectionContent } = useResumeStore();
@@ -57,6 +82,8 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
       ...bankExperience,
       id: generateId(),
       fromBank: true,
+      startDate: formatDateForMonthInput(bankExperience.startDate),
+      endDate: formatDateForMonthInput(bankExperience.endDate),
     };
     
     const updatedContent: ExperienceSection = {
