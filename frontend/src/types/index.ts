@@ -85,11 +85,7 @@ export interface EducationSection {
 }
 
 export interface SkillsSection {
-  categories: {
-    id: string;
-    name: string;
-    skills: string[];
-  }[];
+  skills: string[];
 }
 
 export interface ProjectItem {
