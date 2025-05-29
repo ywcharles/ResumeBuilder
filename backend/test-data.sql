@@ -34,6 +34,10 @@ VALUES
 (1, 1, 'Database Systems', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (1, 1, 'Web Development', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
+INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+VALUES
+(1, 1, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2020-09', '2025-06', '3.7', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
 INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
 (1, 1, 'Susquehanna International Group', 'Software Developer', 'Bala Cynwyd, PA', '2023-09-01', '2024-09-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -148,6 +152,16 @@ VALUES
 (3, 2, 'Computational Photography', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 2, 'Data Structures', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 2, 'Software Architecture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Education for Frontend Resume
+INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+VALUES
+(2, 2, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2025-06', '3.8', 'Co-op Program. Focus on Human-Computer Interaction and Software Engineering.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Education for Data Resume
+INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+VALUES
+(2, 3, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2025-06', '3.8', 'Co-op Program. Concentration in Data Science and Machine Learning.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Work Experience for Frontend Resume
 INSERT INTO experience (user_id, resume_id, company_name, position, location, start_date, end_date, created_at, updated_at)
@@ -371,6 +385,11 @@ VALUES
 (4, 3, 'Statistics', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (4, 3, 'Discrete Math', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (4, 3, 'Linear Algebra', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Education
+INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+VALUES
+(3, 4, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2026-06', '3.9', 'Co-op Program. Concentration in Software Engineering and AI. Dean''s List for 4 terms.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert skills 
 -- Note: Fixed order_num for database skills to continue sequence (was duplicate 1,2,3,4,5)
