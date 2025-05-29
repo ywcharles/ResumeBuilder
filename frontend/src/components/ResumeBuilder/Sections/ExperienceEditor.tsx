@@ -15,13 +15,15 @@ const formatDateForMonthInput = (dateString: string): string => {
   if (!dateString) return '';
   
   try {
-    let date: Date;
-    
     if (/^\d{4}-\d{2}$/.test(dateString)) {
       return dateString;
     }
     
-    date = new Date(dateString);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return dateString.substring(0, 7);
+    }
+    
+    const date = new Date(dateString);
     
     if (isNaN(date.getTime())) {
       return '';
