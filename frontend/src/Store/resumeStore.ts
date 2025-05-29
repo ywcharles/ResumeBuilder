@@ -62,18 +62,7 @@ const defaultEducationSection: EducationSection = {
 };
 
 const defaultSkillsSection: SkillsSection = {
-  categories: [
-    {
-      id: generateId(),
-      name: 'Technical Skills',
-      skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL']
-    },
-    {
-      id: generateId(),
-      name: 'Soft Skills',
-      skills: ['Leadership', 'Communication', 'Problem Solving', 'Teamwork']
-    }
-  ]
+  skills: []
 };
 
 const initialSections: ResumeSection[] = [
