@@ -1,5 +1,5 @@
 import { Plus, Trash2, Check, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useResumeStore } from '../../../Store/resumeStore';
 import { ResumeSection, ExperienceSection, ExperienceItem } from '../../../types';
 import Button from '../../../ui/Button';
@@ -18,6 +18,13 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   const [showBank, setShowBank] = useState(false);
   const experienceData = section.content as ExperienceSection;
   
+  useEffect(() => {
+    if (experienceData.items.length === 0 && user?.id) {
+      setShowBank(true);
+      fetchExperienceBank();
+    }
+  }, [experienceData.items.length, user?.id, fetchExperienceBank]);
+
   const addExperience = () => {
     const newItem: ExperienceItem = {
       id: generateId(),
