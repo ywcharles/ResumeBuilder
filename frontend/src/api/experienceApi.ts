@@ -4,13 +4,12 @@ import { ExperienceSection, ExperienceItem } from '../types';
 interface DatabaseExperienceItem {
   id: number;
   user_id: number;
-  resume_id: number;
   company_name: string;
   position: string;
   location: string;
   start_date: string;
   end_date: string | null;
-  is_selected: boolean;
+  current: boolean;
   created_at: string;
   updated_at: string;
   bullets: {
@@ -21,9 +20,7 @@ interface DatabaseExperienceItem {
   }[];
 }
 
-interface ExperienceBankResponse {
-  items: ExperienceItem[];
-}
+interface ExperienceBankResponse extends ExperienceSection {}
 
 function transformFromDatabase(dbExperience: DatabaseExperienceItem): ExperienceItem {
   return {
@@ -40,7 +37,7 @@ function transformFromDatabase(dbExperience: DatabaseExperienceItem): Experience
   };
 }
 
-function transformToDatabase(frontendExperience: ExperienceItem, userId: number, resumeId: number) {
+function transformToDatabase(frontendExperience: ExperienceItem, userId: number, resumeId?: number) {
   return {
     userId,
     resumeId,
@@ -66,9 +63,9 @@ export const experienceApi = {
     }
   },
 
-  async getResumeExperiences(resumeId: number): Promise<DatabaseExperienceItem[]> {
+  async getResumeExperiences(resumeId: number): Promise<ExperienceSection> {
     try {
-      const response = await api.get<DatabaseExperienceItem[]>(`/api/experiences/resume/${resumeId}`);
+      const response = await api.get<ExperienceSection>(`/api/experiences/resume/${resumeId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching resume experiences:', error);
@@ -91,6 +88,19 @@ export const experienceApi = {
     }
   },
 
+  async addExperienceToResume(
+    experienceId: string,
+    resumeId: number
+  ): Promise<{ message: string }> {
+    try {
+      const response = await api.post(`/api/experiences/resume/${resumeId}/add/${experienceId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding experience to resume:', error);
+      throw error;
+    }
+  },
+
   async updateExperience(
     experienceId: string,
     experienceData: ExperienceItem
@@ -102,7 +112,6 @@ export const experienceApi = {
         location: experienceData.location,
         startDate: experienceData.startDate,
         endDate: experienceData.current ? null : experienceData.endDate,
-        isSelected: true,
         bullets: experienceData.bullets
           .filter(bullet => bullet && bullet.trim())
           .map(content => ({ content, is_selected: true }))
@@ -116,25 +125,25 @@ export const experienceApi = {
     }
   },
 
+  async removeExperienceFromResume(
+    resumeId: number,
+    experienceId: string
+  ): Promise<{ message: string }> {
+    try {
+      const response = await api.delete(`/api/experiences/resume/${resumeId}/experience/${experienceId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error removing experience from resume:', error);
+      throw error;
+    }
+  },
+
   async deleteExperience(experienceId: string): Promise<{ message: string }> {
     try {
       const response = await api.delete(`/api/experiences/${experienceId}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting experience:', error);
-      throw error;
-    }
-  },
-
-  async toggleExperienceSelection(
-    experienceId: string,
-    isSelected: boolean
-  ): Promise<{ message: string }> {
-    try {
-      const response = await api.patch(`/api/experiences/${experienceId}/toggle`, { isSelected });
-      return response.data;
-    } catch (error) {
-      console.error('Error toggling experience selection:', error);
       throw error;
     }
   }

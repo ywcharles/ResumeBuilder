@@ -81,28 +81,50 @@ CREATE TABLE education (
 CREATE TABLE experience (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  resume_id INTEGER NOT NULL,
   company_name VARCHAR(50),
   position VARCHAR(50),
   location VARCHAR(50),
-  is_selected BOOLEAN DEFAULT 1,
   start_date TIMESTAMP,
   end_date TIMESTAMP,
+  current BOOLEAN DEFAULT 0,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (resume_id) REFERENCES resume(id)
+  FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+CREATE TABLE resume_experience (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  resume_id INTEGER NOT NULL,
+  experience_id INTEGER NOT NULL,
+  order_num INTEGER,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  FOREIGN KEY (resume_id) REFERENCES resume(id),
+  FOREIGN KEY (experience_id) REFERENCES experience(id),
+  UNIQUE(resume_id, experience_id)
 );
 
 CREATE TABLE bullet_point (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   experience_id INTEGER NOT NULL,
   content VARCHAR(150),
-  is_selected BOOLEAN DEFAULT 1,
   order_num INTEGER,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   FOREIGN KEY (experience_id) REFERENCES experience(id)
+);
+
+CREATE TABLE resume_experience_bullet (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  resume_experience_id INTEGER NOT NULL,
+  bullet_point_id INTEGER NOT NULL,
+  is_selected BOOLEAN DEFAULT 1,
+  order_num INTEGER,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  FOREIGN KEY (resume_experience_id) REFERENCES resume_experience(id),
+  FOREIGN KEY (bullet_point_id) REFERENCES bullet_point(id),
+  UNIQUE(resume_experience_id, bullet_point_id)
 );
 
 CREATE TABLE tag (

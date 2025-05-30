@@ -28,7 +28,7 @@ export const useResumeData = () => {
         headerApi.getResumeHeaderData(currentResumeId).catch(() => null),
         skillsApi.getResumeSkills(currentResumeId).catch(() => ({ skills: [] })),
         educationApi.getResumeEducations(currentResumeId).catch(() => ({ items: [] })),
-        experienceApi.getResumeExperiences(currentResumeId).catch(() => [])
+        experienceApi.getResumeExperiences(currentResumeId).catch(() => ({ items: [] }))
       ]);
 
       sections.forEach(section => {
@@ -48,19 +48,7 @@ export const useResumeData = () => {
             break;
           
           case SectionType.EXPERIENCE:
-            const transformedExperience: ExperienceSection = {
-              items: experienceData.map(exp => ({
-                id: exp.id.toString(),
-                company: exp.company_name || '',
-                position: exp.position || '',
-                location: exp.location || '',
-                startDate: exp.start_date || '',
-                endDate: exp.end_date || '',
-                current: !exp.end_date,
-                bullets: exp.bullets?.map(bullet => bullet.content) || ['']
-              }))
-            };
-            updateSectionContent(section.id, transformedExperience);
+            updateSectionContent(section.id, experienceData);
             break;
         }
       });

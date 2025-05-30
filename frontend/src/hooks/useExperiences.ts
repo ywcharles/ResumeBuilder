@@ -10,7 +10,9 @@ interface UseExperiencesReturn {
   fetchExperienceBank: () => Promise<void>;
   addExperienceFromBank: (experience: ExperienceItem) => ExperienceItem;
   saveExperience: (experienceData: ExperienceItem, resumeId: number) => Promise<string>;
+  addExistingExperienceToResume: (experienceId: string, resumeId: number) => Promise<void>;
   updateExperience: (experienceId: string, experienceData: ExperienceItem) => Promise<void>;
+  removeExperienceFromResume: (resumeId: number, experienceId: string) => Promise<void>;
   deleteExperience: (experienceId: string) => Promise<void>;
 }
 
@@ -60,13 +62,30 @@ export const useExperiences = (): UseExperiencesReturn => {
 
     try {
       const response = await experienceApi.createExperience(experienceData, user.id, resumeId);
+      // Refresh the bank since we added a new experience
+      await fetchExperienceBank();
       return response.experienceId.toString();
     } catch (err) {
       setError('Failed to save experience');
       console.error('Error saving experience:', err);
       throw err;
     }
-  }, [user?.id]);
+  }, [user?.id, fetchExperienceBank]);
+
+  const addExistingExperienceToResume = useCallback(async (
+    experienceId: string,
+    resumeId: number
+  ): Promise<void> => {
+    setError(null);
+
+    try {
+      await experienceApi.addExperienceToResume(experienceId, resumeId);
+    } catch (err) {
+      setError('Failed to add experience to resume');
+      console.error('Error adding experience to resume:', err);
+      throw err;
+    }
+  }, []);
 
   const updateExperience = useCallback(async (
     experienceId: string,
@@ -76,9 +95,26 @@ export const useExperiences = (): UseExperiencesReturn => {
 
     try {
       await experienceApi.updateExperience(experienceId, experienceData);
+      // Refresh the bank since we updated an experience
+      await fetchExperienceBank();
     } catch (err) {
       setError('Failed to update experience');
       console.error('Error updating experience:', err);
+      throw err;
+    }
+  }, [fetchExperienceBank]);
+
+  const removeExperienceFromResume = useCallback(async (
+    resumeId: number,
+    experienceId: string
+  ): Promise<void> => {
+    setError(null);
+
+    try {
+      await experienceApi.removeExperienceFromResume(resumeId, experienceId);
+    } catch (err) {
+      setError('Failed to remove experience from resume');
+      console.error('Error removing experience from resume:', err);
       throw err;
     }
   }, []);
@@ -88,12 +124,14 @@ export const useExperiences = (): UseExperiencesReturn => {
 
     try {
       await experienceApi.deleteExperience(experienceId);
+      // Refresh the bank since we deleted an experience
+      await fetchExperienceBank();
     } catch (err) {
       setError('Failed to delete experience');
       console.error('Error deleting experience:', err);
       throw err;
     }
-  }, []);
+  }, [fetchExperienceBank]);
 
   return {
     experienceBank,
@@ -102,7 +140,9 @@ export const useExperiences = (): UseExperiencesReturn => {
     fetchExperienceBank,
     addExperienceFromBank,
     saveExperience,
+    addExistingExperienceToResume,
     updateExperience,
+    removeExperienceFromResume,
     deleteExperience,
   };
 }; 

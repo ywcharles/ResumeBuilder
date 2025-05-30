@@ -41,7 +41,17 @@ const formatDateForMonthInput = (dateString: string): string => {
 const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   const [user] = useUser();
   const { updateSectionContent, isLoadingResume, currentResumeId } = useResumeStore();
-  const { experienceBank, isLoading, error, fetchExperienceBank, saveExperience, updateExperience: updateExperienceInDb, deleteExperience } = useExperiences();
+  const { 
+    experienceBank, 
+    isLoading, 
+    error, 
+    fetchExperienceBank, 
+    saveExperience, 
+    addExistingExperienceToResume,
+    updateExperience: updateExperienceInDb, 
+    removeExperienceFromResume,
+    deleteExperience 
+  } = useExperiences();
   const [showBank, setShowBank] = useState(false);
   const experienceData = section.content as ExperienceSection;
   
@@ -92,38 +102,27 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   const addExperienceFromBank = async (bankExperience: ExperienceItem) => {
     if (!user?.id || !currentResumeId) return;
 
-    const newItem: ExperienceItem = {
-      ...bankExperience,
-      id: generateId(),
-      fromBank: true,
-      startDate: formatDateForMonthInput(bankExperience.startDate),
-      endDate: formatDateForMonthInput(bankExperience.endDate),
-    };
-    
+    // Add the experience to the current resume view immediately
     const updatedContent: ExperienceSection = {
       ...experienceData,
-      items: [...experienceData.items, newItem]
+      items: [...experienceData.items, {
+        ...bankExperience,
+        fromBank: true,
+        startDate: formatDateForMonthInput(bankExperience.startDate),
+        endDate: formatDateForMonthInput(bankExperience.endDate),
+      }]
     };
     
     updateSectionContent(section.id, updatedContent);
     setShowBank(false);
 
     try {
-      const savedId = await saveExperience(newItem, currentResumeId);
-      const finalContent: ExperienceSection = {
-        ...updatedContent,
-        items: updatedContent.items.map(item => 
-          item.id === newItem.id ? { ...item, id: savedId } : item
-        )
-      };
-      updateSectionContent(section.id, finalContent);
+      // Link existing experience to this resume
+      await addExistingExperienceToResume(bankExperience.id, currentResumeId);
     } catch (error) {
-      console.error('Failed to save experience from bank:', error);
-      const rollbackContent: ExperienceSection = {
-        ...experienceData,
-        items: experienceData.items
-      };
-      updateSectionContent(section.id, rollbackContent);
+      console.error('Failed to add experience from bank:', error);
+      // Rollback on error
+      updateSectionContent(section.id, experienceData);
     }
   };
   
@@ -131,7 +130,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     if (experienceData.items[index].fromBank) {
       return;
     }
-    
+
     const updatedItems = [...experienceData.items];
     updatedItems[index] = {
       ...updatedItems[index],
@@ -163,7 +162,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     if (experienceData.items[experienceIndex].fromBank) {
       return;
     }
-    
+
     const updatedItems = [...experienceData.items];
     const updatedBullets = [...updatedItems[experienceIndex].bullets];
     updatedBullets[bulletIndex] = value;
@@ -194,7 +193,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     if (experienceData.items[experienceIndex].fromBank) {
       return;
     }
-    
+
     const updatedItems = [...experienceData.items];
     updatedItems[experienceIndex] = {
       ...updatedItems[experienceIndex],
@@ -222,7 +221,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     if (experienceData.items[experienceIndex].fromBank) {
       return;
     }
-    
+
     const updatedItems = [...experienceData.items];
     const updatedBullets = [...updatedItems[experienceIndex].bullets];
     updatedBullets.splice(bulletIndex, 1);
@@ -264,18 +263,33 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
 
     if (itemToRemove.id && !itemToRemove.id.startsWith('new-') && !itemToRemove.id.startsWith('temp-')) {
       try {
-        await deleteExperience(itemToRemove.id);
+        if (currentResumeId) {
+          // Remove from resume but keep in bank
+          await removeExperienceFromResume(currentResumeId, itemToRemove.id);
+        }
       } catch (error) {
-        console.error('Failed to delete experience:', error);
+        console.error('Failed to remove experience from resume:', error);
       }
+    }
+  };
+
+  const deleteExperienceFromBank = async (experienceId: string) => {
+    try {
+      await deleteExperience(experienceId);
+      // Remove from current resume view if it's there
+      const updatedContent: ExperienceSection = {
+        ...experienceData,
+        items: experienceData.items.filter(item => item.id !== experienceId)
+      };
+      updateSectionContent(section.id, updatedContent);
+    } catch (error) {
+      console.error('Failed to delete experience from bank:', error);
     }
   };
 
   const isExperienceAlreadyAdded = (bankExperience: ExperienceItem): boolean => {
     return experienceData.items.some(item => 
-      item.company === bankExperience.company &&
-      item.position === bankExperience.position &&
-      item.startDate === formatDateForMonthInput(bankExperience.startDate)
+      item.id === bankExperience.id
     );
   };
 
@@ -354,24 +368,35 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                           )}
                         </div>
                       </div>
-                      {(() => {
-                        const isAlreadyAdded = isExperienceAlreadyAdded(experience);
-                        return (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addExperienceFromBank(experience)}
-                            disabled={isAlreadyAdded}
-                            className={`ml-3 ${
-                              isAlreadyAdded 
-                                ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed' 
-                                : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100'
-                            }`}
-                          >
-                            {isAlreadyAdded ? 'Added' : 'Add'}
-                          </Button>
-                        );
-                      })()}
+                      <div className="flex gap-2">
+                        {(() => {
+                          const isAlreadyAdded = isExperienceAlreadyAdded(experience);
+                          return (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addExperienceFromBank(experience)}
+                              disabled={isAlreadyAdded}
+                              className={`${
+                                isAlreadyAdded 
+                                  ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed' 
+                                  : 'bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100'
+                              }`}
+                            >
+                              {isAlreadyAdded ? 'Added' : 'Add'}
+                            </Button>
+                          );
+                        })()}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteExperienceFromBank(experience.id)}
+                          className="bg-red-50 border-red-300 text-red-700 hover:bg-red-100"
+                          title="Delete from bank (will remove from all resumes)"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -394,14 +419,16 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
               <div className="flex items-center gap-2">
                 <Check size={16} className="text-green-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="font-medium text-gray-800">{item.position} – {item.company}</h5>
+                  <div className="flex items-center gap-2">
+                    <h5 className="font-medium text-gray-800">{item.position} – {item.company}</h5>
+                    {item.fromBank && (
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                        From Bank (Read-only)
+                      </span>
+                    )}
+                  </div>
                   {item.location && (
                     <p className="text-sm text-gray-600">{item.location}</p>
-                  )}
-                  {item.fromBank && (
-                    <span className="inline-block text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded mt-1">
-                      From Bank (Read-only)
-                    </span>
                   )}
                 </div>
               </div>
@@ -416,7 +443,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                   size="sm"
                   className="p-1 h-auto w-auto text-red-500 hover:text-red-700"
                   onClick={() => removeExperience(index)}
-                  title="Remove experience"
+                  title="Remove from resume"
                 >
                   <X size={16} />
                 </Button>
@@ -433,11 +460,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     type="text"
                     value={item.company}
                     onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
-                    }`}
-                    readOnly={item.fromBank}
                     disabled={item.fromBank}
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                      item.fromBank ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
                 
@@ -449,11 +475,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     type="text"
                     value={item.position}
                     onChange={(e) => updateExperience(index, 'position', e.target.value)}
-                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
-                    }`}
-                    readOnly={item.fromBank}
                     disabled={item.fromBank}
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                      item.fromBank ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -466,12 +491,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                   type="text"
                   value={item.location}
                   onChange={(e) => updateExperience(index, 'location', e.target.value)}
+                  disabled={item.fromBank}
                   className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                    item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                    item.fromBank ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
                   }`}
                   placeholder="City, State"
-                  readOnly={item.fromBank}
-                  disabled={item.fromBank}
                 />
               </div>
               
@@ -484,11 +508,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                     type="month"
                     value={item.startDate}
                     onChange={(e) => updateExperience(index, 'startDate', e.target.value)}
-                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
-                    }`}
-                    readOnly={item.fromBank}
                     disabled={item.fromBank}
+                    className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                      item.fromBank ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
+                    }`}
                   />
                 </div>
                 
@@ -501,11 +524,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                       type="month"
                       value={item.endDate}
                       onChange={(e) => updateExperience(index, 'endDate', e.target.value)}
-                      className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                        item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
-                      }`}
-                      readOnly={item.fromBank}
                       disabled={item.fromBank}
+                      className={`w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
+                        item.fromBank ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
+                      }`}
                     />
                   </div>
                 )}
@@ -516,10 +538,12 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                       type="checkbox"
                       checked={item.current}
                       onChange={(e) => updateExperience(index, 'current', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       disabled={item.fromBank}
+                      className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
+                        item.fromBank ? 'cursor-not-allowed' : ''
+                      }`}
                     />
-                    <label className={`ml-2 block text-sm ${item.fromBank ? 'text-gray-400' : 'text-gray-700'}`}>
+                    <label className="ml-2 block text-sm text-gray-700">
                       Current Position
                     </label>
                   </div>
@@ -538,12 +562,11 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                         type="text"
                         value={bullet}
                         onChange={(e) => updateBullet(index, bulletIndex, e.target.value)}
+                        disabled={item.fromBank}
                         className={`flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                          item.fromBank ? 'bg-gray-50 cursor-not-allowed' : ''
+                          item.fromBank ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
                         }`}
                         placeholder="Add accomplishment..."
-                        readOnly={item.fromBank}
-                        disabled={item.fromBank}
                       />
                       {!item.fromBank && (
                         <Button

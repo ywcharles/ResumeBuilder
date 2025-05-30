@@ -1,14 +1,48 @@
 import express, { Request, Response } from "express";
 import { Database } from "sqlite";
-import {
-  ExperienceWithBullets,
-  FrontendExperienceItem,
-  FrontendExperienceSection
-} from "../types/experience.js";
 
 const router = express.Router();
 
-function transformToFrontendFormat(dbExperience: ExperienceWithBullets): FrontendExperienceItem {
+interface BulletPoint {
+  id: number;
+  experience_id: number;
+  content: string;
+  is_selected: boolean;
+  order_num: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ExperienceWithBullets {
+  id: number;
+  user_id: number;
+  company_name: string;
+  position: string;
+  location: string;
+  start_date: string;
+  end_date: string | null;
+  current: boolean;
+  created_at: string;
+  updated_at: string;
+  bullets: BulletPoint[];
+}
+
+interface FrontendExperience {
+  id: string;
+  company: string;
+  position: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  bullets: string[];
+}
+
+interface FrontendExperienceSection {
+  items: FrontendExperience[];
+}
+
+function transformToFrontendFormat(dbExperience: ExperienceWithBullets): FrontendExperience {
   return {
     id: dbExperience.id.toString(),
     company: dbExperience.company_name,
@@ -24,15 +58,16 @@ function transformToFrontendFormat(dbExperience: ExperienceWithBullets): Fronten
 }
 
 export default function initExperienceRoutes(db: Database) {
+  // Get user's experience bank (all experiences not tied to specific resume)
   router.get("/user/:userId/bank", async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       
-      // Get all experiences for the user
+      // Get all experiences for the user from their bank
       const experiences = await db.all(
         `SELECT 
-          id, user_id, resume_id, company_name, position, location, 
-          start_date, end_date, is_selected, created_at, updated_at
+          id, user_id, company_name, position, location, 
+          start_date, end_date, created_at, updated_at
          FROM experience 
          WHERE user_id = ? 
          ORDER BY start_date DESC`,
@@ -44,7 +79,7 @@ export default function initExperienceRoutes(db: Database) {
       
       for (const experience of experiences) {
         const bullets = await db.all(
-          `SELECT id, experience_id, content, is_selected, order_num, created_at, updated_at
+          `SELECT id, experience_id, content, order_num, created_at, updated_at
            FROM bullet_point 
            WHERE experience_id = ? 
            ORDER BY order_num ASC`,
@@ -53,7 +88,11 @@ export default function initExperienceRoutes(db: Database) {
         
         experiencesWithBullets.push({
           ...experience,
-          bullets
+          current: !experience.end_date,
+          bullets: bullets.map(bullet => ({
+            ...bullet,
+            is_selected: true // Default for bank items
+          }))
         });
       }
 
@@ -70,82 +109,63 @@ export default function initExperienceRoutes(db: Database) {
     }
   });
 
+  // Get experiences linked to a specific resume
   router.get("/resume/:resumeId", async (req: Request, res: Response) => {
     try {
       const { resumeId } = req.params;
       
+      // Get experiences linked to this resume through resume_experience junction table
       const experiences = await db.all(
         `SELECT 
-          id, user_id, resume_id, company_name, position, location, 
-          start_date, end_date, is_selected, created_at, updated_at
-         FROM experience 
-         WHERE resume_id = ? 
-         ORDER BY start_date DESC`,
+          e.id, e.user_id, e.company_name, e.position, e.location, 
+          e.start_date, e.end_date, e.created_at, e.updated_at,
+          re.order_num as resume_order
+         FROM experience e
+         JOIN resume_experience re ON e.id = re.experience_id
+         WHERE re.resume_id = ? 
+         ORDER BY re.order_num ASC`,
         resumeId
       );
 
       const experiencesWithBullets: ExperienceWithBullets[] = [];
       
       for (const experience of experiences) {
+        // Get selected bullet points for this resume
         const bullets = await db.all(
-          `SELECT id, content, is_selected, order_num 
-           FROM bullet_point 
-           WHERE experience_id = ? 
-           ORDER BY order_num ASC`,
-          experience.id
+          `SELECT bp.id, bp.experience_id, bp.content, bp.order_num, bp.created_at, bp.updated_at,
+                  reb.is_selected, reb.order_num as resume_bullet_order
+           FROM bullet_point bp
+           JOIN resume_experience re ON bp.experience_id = re.experience_id
+           LEFT JOIN resume_experience_bullet reb ON bp.id = reb.bullet_point_id AND re.id = reb.resume_experience_id
+           WHERE bp.experience_id = ? AND re.resume_id = ?
+           ORDER BY COALESCE(reb.order_num, bp.order_num) ASC`,
+          experience.id, resumeId
         );
         
         experiencesWithBullets.push({
           ...experience,
-          bullets
+          current: !experience.end_date,
+          bullets: bullets.map(bullet => ({
+            ...bullet,
+            is_selected: bullet.is_selected !== null ? bullet.is_selected : true
+          }))
         });
       }
 
-      res.json(experiencesWithBullets);
+      const frontendExperiences = experiencesWithBullets.map(transformToFrontendFormat);
+      
+      const response: FrontendExperienceSection = {
+        items: frontendExperiences
+      };
+
+      res.json(response);
     } catch (error) {
       console.error("Error fetching resume experiences:", error);
       res.status(500).json({ error: "Failed to fetch experiences" });
     }
   });
 
-  router.get("/:experienceId", async (req: Request, res: Response) => {
-    try {
-      const { experienceId } = req.params;
-      
-      const experience = await db.get(
-        `SELECT 
-          id, user_id, resume_id, company_name, position, location, 
-          start_date, end_date, is_selected, created_at, updated_at
-         FROM experience 
-         WHERE id = ?`,
-        experienceId
-      );
-
-      if (!experience) {
-        res.status(404).json({ error: "Experience not found" });
-        return;
-      }
-
-      const bullets = await db.all(
-        `SELECT id, content, is_selected, order_num 
-         FROM bullet_point 
-         WHERE experience_id = ? 
-         ORDER BY order_num ASC`,
-        experienceId
-      );
-
-      const experienceWithBullets: ExperienceWithBullets = {
-        ...experience,
-        bullets
-      };
-
-      res.json(experienceWithBullets);
-    } catch (error) {
-      console.error("Error fetching experience:", error);
-      res.status(500).json({ error: "Failed to fetch experience" });
-    }
-  });
-
+  // Create new experience in user's bank and optionally link to resume
   router.post("/", async (req: Request, res: Response) => {
     try {
       const {
@@ -159,36 +179,79 @@ export default function initExperienceRoutes(db: Database) {
         bullets = []
       } = req.body;
 
+      // Insert experience into user's bank (no resume_id)
       const result = await db.run(
         `INSERT INTO experience (
-          user_id, resume_id, company_name, position, location, 
-          start_date, end_date, is_selected, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          user_id, company_name, position, location, 
+          start_date, end_date, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         userId,
-        resumeId,
         companyName,
         position,
         location,
         startDate,
         endDate || null,
-        true,
         new Date().toISOString(),
         new Date().toISOString()
       );
 
       const experienceId = result.lastID;
 
+      // Insert bullet points
       if (bullets.length > 0) {
         for (let i = 0; i < bullets.length; i++) {
           const bullet = bullets[i];
           if (bullet.content && bullet.content.trim()) {
             await db.run(
               `INSERT INTO bullet_point (
-                experience_id, content, is_selected, order_num, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?)`,
+                experience_id, content, order_num, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?)`,
               experienceId,
               bullet.content,
-              bullet.is_selected !== undefined ? bullet.is_selected : true,
+              i + 1,
+              new Date().toISOString(),
+              new Date().toISOString()
+            );
+          }
+        }
+      }
+
+      // If resumeId provided, link to resume
+      if (resumeId) {
+        // Get next order number for this resume
+        const maxOrderResult = await db.get(
+          "SELECT MAX(order_num) as maxOrder FROM resume_experience WHERE resume_id = ?",
+          resumeId
+        );
+        const nextOrder = (maxOrderResult?.maxOrder || 0) + 1;
+
+        // Link experience to resume
+        const resumeExperienceResult = await db.run(
+          `INSERT INTO resume_experience (
+            resume_id, experience_id, order_num, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?)`,
+          resumeId,
+          experienceId,
+          nextOrder,
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
+
+        // Link all bullet points to resume (selected by default)
+        if (bullets.length > 0) {
+          const bulletPoints = await db.all(
+            "SELECT id FROM bullet_point WHERE experience_id = ? ORDER BY order_num",
+            experienceId
+          );
+
+          for (let i = 0; i < bulletPoints.length; i++) {
+            await db.run(
+              `INSERT INTO resume_experience_bullet (
+                resume_experience_id, bullet_point_id, is_selected, order_num, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?)`,
+              resumeExperienceResult.lastID,
+              bulletPoints[i].id,
+              true,
               i + 1,
               new Date().toISOString(),
               new Date().toISOString()
@@ -207,6 +270,69 @@ export default function initExperienceRoutes(db: Database) {
     }
   });
 
+  // Add existing experience from bank to resume
+  router.post("/resume/:resumeId/add/:experienceId", async (req: Request, res: Response) => {
+    try {
+      const { resumeId, experienceId } = req.params;
+
+      // Check if experience is already linked to this resume
+      const existing = await db.get(
+        "SELECT id FROM resume_experience WHERE resume_id = ? AND experience_id = ?",
+        resumeId, experienceId
+      );
+
+      if (existing) {
+        res.status(400).json({ error: "Experience already linked to this resume" });
+        return;
+      }
+
+      // Get next order number for this resume
+      const maxOrderResult = await db.get(
+        "SELECT MAX(order_num) as maxOrder FROM resume_experience WHERE resume_id = ?",
+        resumeId
+      );
+      const nextOrder = (maxOrderResult?.maxOrder || 0) + 1;
+
+      // Link experience to resume
+      const resumeExperienceResult = await db.run(
+        `INSERT INTO resume_experience (
+          resume_id, experience_id, order_num, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?)`,
+        resumeId,
+        experienceId,
+        nextOrder,
+        new Date().toISOString(),
+        new Date().toISOString()
+      );
+
+      // Link all bullet points to resume (selected by default)
+      const bulletPoints = await db.all(
+        "SELECT id FROM bullet_point WHERE experience_id = ? ORDER BY order_num",
+        experienceId
+      );
+
+      for (let i = 0; i < bulletPoints.length; i++) {
+        await db.run(
+          `INSERT INTO resume_experience_bullet (
+            resume_experience_id, bullet_point_id, is_selected, order_num, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+          resumeExperienceResult.lastID,
+          bulletPoints[i].id,
+          true,
+          i + 1,
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
+      }
+
+      res.json({ message: "Experience added to resume successfully" });
+    } catch (error) {
+      console.error("Error adding experience to resume:", error);
+      res.status(500).json({ error: "Failed to add experience to resume" });
+    }
+  });
+
+  // Update experience in user's bank
   router.put("/:experienceId", async (req: Request, res: Response) => {
     try {
       const { experienceId } = req.params;
@@ -216,25 +342,25 @@ export default function initExperienceRoutes(db: Database) {
         location,
         startDate,
         endDate,
-        isSelected,
         bullets = []
       } = req.body;
 
+      // Update experience
       await db.run(
         `UPDATE experience SET 
           company_name = ?, position = ?, location = ?, start_date = ?, 
-          end_date = ?, is_selected = ?, updated_at = ?
+          end_date = ?, updated_at = ?
          WHERE id = ?`,
         companyName,
         position,
         location,
         startDate,
         endDate || null,
-        isSelected,
         new Date().toISOString(),
         experienceId
       );
 
+      // Update bullet points
       await db.run("DELETE FROM bullet_point WHERE experience_id = ?", experienceId);
 
       if (bullets.length > 0) {
@@ -243,11 +369,10 @@ export default function initExperienceRoutes(db: Database) {
           if (bullet.content && bullet.content.trim()) {
             await db.run(
               `INSERT INTO bullet_point (
-                experience_id, content, is_selected, order_num, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?)`,
+                experience_id, content, order_num, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?)`,
               experienceId,
               bullet.content,
-              bullet.is_selected !== undefined ? bullet.is_selected : true,
               i + 1,
               new Date().toISOString(),
               new Date().toISOString()
@@ -263,39 +388,61 @@ export default function initExperienceRoutes(db: Database) {
     }
   });
 
+  // Remove experience from resume (but keep in user's bank)
+  router.delete("/resume/:resumeId/experience/:experienceId", async (req: Request, res: Response) => {
+    try {
+      const { resumeId, experienceId } = req.params;
+
+      // Remove from resume_experience_bullet first
+      await db.run(
+        `DELETE FROM resume_experience_bullet 
+         WHERE resume_experience_id IN (
+           SELECT id FROM resume_experience 
+           WHERE resume_id = ? AND experience_id = ?
+         )`,
+        resumeId, experienceId
+      );
+
+      // Remove from resume_experience
+      await db.run(
+        "DELETE FROM resume_experience WHERE resume_id = ? AND experience_id = ?",
+        resumeId, experienceId
+      );
+
+      res.json({ message: "Experience removed from resume successfully" });
+    } catch (error) {
+      console.error("Error removing experience from resume:", error);
+      res.status(500).json({ error: "Failed to remove experience from resume" });
+    }
+  });
+
+  // Delete experience completely from user's bank
   router.delete("/:experienceId", async (req: Request, res: Response) => {
     try {
       const { experienceId } = req.params;
 
+      // Remove from resume_experience_bullet first
+      await db.run(
+        `DELETE FROM resume_experience_bullet 
+         WHERE resume_experience_id IN (
+           SELECT id FROM resume_experience WHERE experience_id = ?
+         )`,
+        experienceId
+      );
+
+      // Remove from resume_experience
+      await db.run("DELETE FROM resume_experience WHERE experience_id = ?", experienceId);
+
+      // Remove bullet points
       await db.run("DELETE FROM bullet_point WHERE experience_id = ?", experienceId);
       
+      // Remove experience from bank
       await db.run("DELETE FROM experience WHERE id = ?", experienceId);
 
       res.json({ message: "Experience deleted successfully" });
     } catch (error) {
       console.error("Error deleting experience:", error);
       res.status(500).json({ error: "Failed to delete experience" });
-    }
-  });
-
-  router.patch("/:experienceId/toggle", async (req: Request, res: Response) => {
-    try {
-      const { experienceId } = req.params;
-      const { isSelected } = req.body;
-
-      await db.run(
-        `UPDATE experience SET 
-          is_selected = ?, updated_at = ?
-         WHERE id = ?`,
-        isSelected,
-        new Date().toISOString(),
-        experienceId
-      );
-
-      res.json({ message: "Experience selection updated successfully" });
-    } catch (error) {
-      console.error("Error updating experience selection:", error);
-      res.status(500).json({ error: "Failed to update experience selection" });
     }
   });
 
