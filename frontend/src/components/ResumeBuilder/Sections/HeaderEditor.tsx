@@ -216,6 +216,33 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
             Show Full URLs
           </label>
         </div>
+        
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={headerContent.showWebsite || false}
+            onChange={(e) => handleChange('showWebsite', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label className="ml-2 block text-sm text-gray-700">
+            Show Website
+          </label>
+        </div>
+        
+        {headerContent.showWebsite && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Website
+            </label>
+            <input
+              type="text"
+              value={headerContent.contact.website || ''}
+              onChange={(e) => handleContactChange('website', e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder="yourwebsite.com"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
