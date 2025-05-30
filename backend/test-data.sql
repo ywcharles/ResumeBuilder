@@ -58,7 +58,7 @@ VALUES
 
 INSERT INTO education (user_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
 VALUES
-(1, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2020-09', '2025-06', '3.7', "Dean's List for 4 terms.", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2020-09', '2025-06', '3.7', 'Dean''s List for 4 terms.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO resume_education (resume_id, education_id, order_num, created_at, updated_at)
 VALUES
