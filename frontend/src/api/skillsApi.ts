@@ -47,7 +47,7 @@ export const skillsApi = {
     resumeId: number,
     skill: string,
     userId: number
-  ): Promise<{ id: number; name: string }> {
+  ): Promise<{ message: string; skillId: number }> {
     try {
       const response = await api.post(`/api/skills/resume/${resumeId}`, {
         skill,
@@ -60,11 +60,41 @@ export const skillsApi = {
     }
   },
 
-  async deleteSkill(skillId: number): Promise<void> {
+  async linkExistingSkillToResume(
+    resumeId: number,
+    existingSkillId: number,
+    userId: number
+  ): Promise<{ message: string; skillId: number }> {
+    try {
+      const response = await api.post(`/api/skills/resume/${resumeId}`, {
+        existingSkillId,
+        userId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error linking skill to resume:', error);
+      throw error;
+    }
+  },
+
+  async removeSkillFromResume(
+    resumeId: number,
+    skillId: number
+  ): Promise<{ message: string }> {
+    try {
+      const response = await api.delete(`/api/skills/resume/${resumeId}/skill/${skillId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error removing skill from resume:', error);
+      throw error;
+    }
+  },
+
+  async deleteSkillFromBank(skillId: number): Promise<void> {
     try {
       await api.delete(`/api/skills/${skillId}`);
     } catch (error) {
-      console.error('Error deleting skill:', error);
+      console.error('Error deleting skill from bank:', error);
       throw error;
     }
   }
