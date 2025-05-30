@@ -1,7 +1,6 @@
 export interface DatabaseEducation {
   id: number;
   user_id: number;
-  resume_id: number;
   institution: string;
   degree: string;
   field: string;
@@ -25,6 +24,7 @@ export interface CreateEducationRequest {
   endDate: string;
   gpa?: string;
   description?: string;
+  existingEducationId?: number;
 }
 
 export interface UpdateEducationRequest {
