@@ -7,7 +7,7 @@ interface HeaderPreviewProps {
 
 const HeaderPreview = ({ section }: HeaderPreviewProps) => {
   const headerData = section.content as HeaderSection;
-  const { fullName, title, contact, showPhone, showLinkedIn, showGitHub, showFullUrls } = headerData;
+  const { fullName, title, contact, showPhone, showLinkedIn, showGitHub, showWebsite, showFullUrls } = headerData;
   
   const renderContactInfo = () => {
     const items = [];
@@ -17,8 +17,6 @@ const HeaderPreview = ({ section }: HeaderPreviewProps) => {
     if (showPhone) {
       items.push(<span key="phone">{contact.phone}</span>);
     }
-    
-    items.push(<span key="location">{contact.location}</span>);
     
     if (showLinkedIn && contact.linkedin) {
       items.push(
@@ -46,6 +44,22 @@ const HeaderPreview = ({ section }: HeaderPreviewProps) => {
           ) : (
             <a href={`https://${contact.github}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
               GitHub
+            </a>
+          )}
+        </span>
+      );
+    }
+    
+    if (showWebsite && contact.website) {
+      items.push(
+        <span key="website">
+          {showFullUrls ? (
+            <a href={`https://${contact.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              {contact.website}
+            </a>
+          ) : (
+            <a href={`https://${contact.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              Website
             </a>
           )}
         </span>

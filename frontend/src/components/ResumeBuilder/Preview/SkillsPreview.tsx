@@ -7,7 +7,7 @@ interface SkillsPreviewProps {
 const SkillsPreview = ({ section }: SkillsPreviewProps) => {
   const skillsData = section.content as SkillsSection;
   
-  if (skillsData.categories.length === 0) return null;
+  if (skillsData.skills.length === 0) return null;
 
   return (
     <div className="mb-6">
@@ -15,21 +15,11 @@ const SkillsPreview = ({ section }: SkillsPreviewProps) => {
         {section.title}
       </h2>
       
-      <div className="space-y-3">
-        {skillsData.categories.map((category) => (
-          <div key={category.id} className="mb-2">
-            {skillsData.categories.length > 1 && (
-              <h3 className="font-semibold text-gray-800">{category.name}</h3>
-            )}
-            
-            <p className="text-sm text-gray-700">
-              {category.skills
-                .filter(skill => skill.trim() !== '')
-                .join(' • ')}
-            </p>
-          </div>
-        ))}
-      </div>
+      <p className="text-sm text-gray-700">
+        {skillsData.skills
+          .filter(skill => skill.trim() !== '')
+          .join(' • ')}
+      </p>
     </div>
   );
 };
