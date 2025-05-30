@@ -8,6 +8,7 @@ interface UseSkillsReturn {
   isLoading: boolean;
   error: string | null;
   fetchSkillsBank: () => Promise<void>;
+  updateResumeSkills: (resumeId: number, skills: string[]) => Promise<void>;
 }
 
 export const useSkills = (): UseSkillsReturn => {
@@ -33,6 +34,20 @@ export const useSkills = (): UseSkillsReturn => {
     }
   }, [user?.id]);
 
+  const updateResumeSkills = useCallback(async (resumeId: number, skills: string[]) => {
+    if (!user?.id) return;
+
+    setError(null);
+
+    try {
+      await skillsApi.updateResumeSkills(resumeId, skills, user.id);
+    } catch (err) {
+      setError('Failed to update skills');
+      console.error('Error updating skills:', err);
+      throw err;
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     if (user?.id) {
       fetchSkillsBank();
@@ -44,5 +59,6 @@ export const useSkills = (): UseSkillsReturn => {
     isLoading,
     error,
     fetchSkillsBank,
+    updateResumeSkills,
   };
 }; 
