@@ -29,7 +29,7 @@ export default function initEducationRoutes(db: Database) {
       
       const educations = await db.all(
         `SELECT 
-          id, user_id, resume_id, institution, degree, field, location, 
+          id, user_id, institution, degree, field, location, 
           start_date, end_date, gpa, description, created_at, updated_at
          FROM education 
          WHERE user_id = ? 
@@ -56,11 +56,13 @@ export default function initEducationRoutes(db: Database) {
       
       const educations = await db.all(
         `SELECT 
-          id, user_id, resume_id, institution, degree, field, location, 
-          start_date, end_date, gpa, description, created_at, updated_at
-         FROM education 
-         WHERE resume_id = ? 
-         ORDER BY start_date DESC`,
+          e.id, e.user_id, e.institution, e.degree, e.field, e.location, 
+          e.start_date, e.end_date, e.gpa, e.description, e.created_at, e.updated_at,
+          re.order_num
+         FROM education e
+         INNER JOIN resume_education re ON e.id = re.education_id
+         WHERE re.resume_id = ? 
+         ORDER BY re.order_num ASC, e.start_date DESC`,
         resumeId
       );
 
@@ -83,7 +85,7 @@ export default function initEducationRoutes(db: Database) {
       
       const education = await db.get(
         `SELECT 
-          id, user_id, resume_id, institution, degree, field, location, 
+          id, user_id, institution, degree, field, location, 
           start_date, end_date, gpa, description, created_at, updated_at
          FROM education 
          WHERE id = ?`,
@@ -115,36 +117,70 @@ export default function initEducationRoutes(db: Database) {
         startDate,
         endDate,
         gpa,
-        description
+        description,
+        existingEducationId
       } = req.body;
 
-      const result = await db.run(
-        `INSERT INTO education (
-          user_id, resume_id, institution, degree, field, location, 
-          start_date, end_date, gpa, description, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        userId,
+      let educationId: number;
+
+      if (existingEducationId) {
+        educationId = existingEducationId;
+        
+        const existingLink = await db.get(
+          `SELECT id FROM resume_education WHERE resume_id = ? AND education_id = ?`,
+          resumeId,
+          educationId
+        );
+
+        if (existingLink) {
+          res.status(400).json({ error: "Education already added to this resume" });
+          return;
+        }
+      } else {
+        const result = await db.run(
+          `INSERT INTO education (
+            user_id, institution, degree, field, location, 
+            start_date, end_date, gpa, description, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          userId,
+          institution,
+          degree,
+          field,
+          location,
+          startDate,
+          endDate,
+          gpa || null,
+          description || null,
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
+
+        educationId = result.lastID!;
+      }
+
+      const maxOrderResult = await db.get(
+        `SELECT MAX(order_num) as max_order FROM resume_education WHERE resume_id = ?`,
+        resumeId
+      );
+      const nextOrder = (maxOrderResult?.max_order || 0) + 1;
+
+      await db.run(
+        `INSERT INTO resume_education (
+          resume_id, education_id, order_num, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?)`,
         resumeId,
-        institution,
-        degree,
-        field,
-        location,
-        startDate,
-        endDate,
-        gpa || null,
-        description || null,
+        educationId,
+        nextOrder,
         new Date().toISOString(),
         new Date().toISOString()
       );
 
-      const educationId = result.lastID;
-
       res.status(201).json({
-        message: "Education created successfully",
+        message: "Education created and linked successfully",
         educationId
       });
     } catch (error) {
-      console.error("Error creating education:", error);
+      console.error("Error creating/linking education:", error);
       res.status(500).json({ error: "Failed to create education" });
     }
   });
@@ -187,16 +223,35 @@ export default function initEducationRoutes(db: Database) {
     }
   });
 
+  router.delete("/resume/:resumeId/education/:educationId", async (req: Request, res: Response) => {
+    try {
+      const { resumeId, educationId } = req.params;
+
+      await db.run(
+        "DELETE FROM resume_education WHERE resume_id = ? AND education_id = ?", 
+        resumeId, 
+        educationId
+      );
+
+      res.json({ message: "Education removed from resume successfully" });
+    } catch (error) {
+      console.error("Error removing education from resume:", error);
+      res.status(500).json({ error: "Failed to remove education from resume" });
+    }
+  });
+
   router.delete("/:educationId", async (req: Request, res: Response) => {
     try {
       const { educationId } = req.params;
 
+      await db.run("DELETE FROM resume_education WHERE education_id = ?", educationId);
+      
       await db.run("DELETE FROM education WHERE id = ?", educationId);
 
-      res.json({ message: "Education deleted successfully" });
+      res.json({ message: "Education deleted from bank successfully" });
     } catch (error) {
-      console.error("Error deleting education:", error);
-      res.status(500).json({ error: "Failed to delete education" });
+      console.error("Error deleting education from bank:", error);
+      res.status(500).json({ error: "Failed to delete education from bank" });
     }
   });
 
