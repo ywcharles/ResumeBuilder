@@ -69,9 +69,9 @@ const ExperiencesContainer = () => {
         location: data.location,
         startDate: data.startDate,
         endDate: data.endDate,
-        bullets: data.bullets
+        bullets: data.bullets,
       });
-      
+
       // Refresh the experiences list
       await fetchExperiences();
     } catch (err: any) {
@@ -80,7 +80,10 @@ const ExperiencesContainer = () => {
     }
   };
 
-  const handleUpdateExperience = async (experienceId: number, data: ExperienceFormData) => {
+  const handleUpdateExperience = async (
+    experienceId: number,
+    data: ExperienceFormData
+  ) => {
     try {
       await api.put(`/api/experience/${experienceId}`, {
         companyName: data.companyName,
@@ -88,9 +91,9 @@ const ExperiencesContainer = () => {
         location: data.location,
         startDate: data.startDate,
         endDate: data.endDate,
-        bullets: data.bullets
+        bullets: data.bullets,
       });
-      
+
       // Refresh the experiences list
       await fetchExperiences();
     } catch (err: any) {
@@ -102,7 +105,7 @@ const ExperiencesContainer = () => {
   const handleDeleteExperience = async (experienceId: number) => {
     try {
       await api.delete(`/api/experience/${experienceId}`);
-      
+
       // Refresh the experiences list
       await fetchExperiences();
     } catch (err: any) {
@@ -123,7 +126,7 @@ const ExperiencesContainer = () => {
     return (
       <div className="bg-white w-[80%] flex flex-col rounded-md justify-center items-center p-5">
         <div className="text-red-500">Error: {error}</div>
-        <button 
+        <button
           onClick={() => {
             setError(null);
             fetchExperiences();
@@ -146,7 +149,8 @@ const ExperiencesContainer = () => {
 
   return (
     <div className="w-full flex flex-col items-center space-y-4">
-      
+      <AddExperienceButton onAdd={handleAddExperience} />
+
       <div className="bg-white w-[80%] flex flex-col rounded-md justify-start items-center p-5 space-y-2">
         {experiences.map((experience) => (
           <ExperienceCard
