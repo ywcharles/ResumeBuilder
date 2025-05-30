@@ -47,18 +47,7 @@ const defaultExperienceSection: ExperienceSection = {
 };
 
 const defaultEducationSection: EducationSection = {
-  items: [
-    {
-      id: generateId(),
-      institution: 'University Name',
-      degree: 'Bachelor of Science',
-      field: 'Computer Science',
-      location: 'City, State',
-      startDate: '2016-09',
-      endDate: '2020-05',
-      gpa: '3.8'
-    }
-  ]
+  items: []
 };
 
 const defaultSkillsSection: SkillsSection = {
