@@ -121,13 +121,14 @@ export default function initResumeRoutes(db: Database) {
         await db.run("DELETE FROM education WHERE resume_id = ?", resumeId);
         
         await db.run(`
-          DELETE FROM bullet_point 
-          WHERE experience_id IN (
-            SELECT id FROM experience WHERE resume_id = ?
+          DELETE FROM resume_experience_bullet 
+          WHERE resume_experience_id IN (
+            SELECT id FROM resume_experience WHERE resume_id = ?
           )
         `, resumeId);
         
-        await db.run("DELETE FROM experience WHERE resume_id = ?", resumeId);
+        await db.run("DELETE FROM resume_experience WHERE resume_id = ?", resumeId);
+        
         await db.run("DELETE FROM resume_tag WHERE resume_id = ?", resumeId);
         await db.run("DELETE FROM resume WHERE id = ?", resumeId);
 
@@ -215,29 +216,40 @@ export default function initResumeRoutes(db: Database) {
           );
         }
 
-        const experiences = await db.all("SELECT * FROM experience WHERE resume_id = ?", resumeId);
+        const experiences = await db.all(`
+          SELECT e.*, re.order_num as resume_order
+          FROM experience e
+          JOIN resume_experience re ON e.id = re.experience_id
+          WHERE re.resume_id = ?
+        `, resumeId);
+        
         for (const exp of experiences) {
-          const newExpResult = await db.run(`
-            INSERT INTO experience (
-              user_id, resume_id, company_name, position, location,
-              is_selected, start_date, end_date, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          const newResumeExpResult = await db.run(`
+            INSERT INTO resume_experience (
+              resume_id, experience_id, order_num, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?)
           `,
-            exp.user_id, newResumeId, exp.company_name, exp.position, exp.location,
-            exp.is_selected, exp.start_date, exp.end_date,
+            newResumeId, exp.id, exp.resume_order,
             new Date().toISOString(), new Date().toISOString()
           );
 
-          const newExpId = newExpResult.lastID;
+          const newResumeExpId = newResumeExpResult.lastID;
 
-          const bullets = await db.all("SELECT * FROM bullet_point WHERE experience_id = ?", exp.id);
-          for (const bullet of bullets) {
+          const selectedBullets = await db.all(`
+            SELECT bp.*, reb.is_selected, reb.order_num as resume_order
+            FROM bullet_point bp
+            JOIN resume_experience_bullet reb ON bp.id = reb.bullet_point_id
+            JOIN resume_experience re ON reb.resume_experience_id = re.id
+            WHERE re.resume_id = ? AND re.experience_id = ?
+          `, resumeId, exp.id);
+
+          for (const bullet of selectedBullets) {
             await db.run(`
-              INSERT INTO bullet_point (
-                experience_id, content, is_selected, order_num, created_at, updated_at
+              INSERT INTO resume_experience_bullet (
+                resume_experience_id, bullet_point_id, is_selected, order_num, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?)
             `,
-              newExpId, bullet.content, bullet.is_selected, bullet.order_num,
+              newResumeExpId, bullet.id, bullet.is_selected, bullet.resume_order,
               new Date().toISOString(), new Date().toISOString()
             );
           }
