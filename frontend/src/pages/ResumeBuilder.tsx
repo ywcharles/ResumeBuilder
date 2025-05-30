@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import EditorPanel from '../components/ResumeBuilder/EditorPanel';
 import PreviewPanel from '../components/ResumeBuilder/PreviewPanel';
+import ResumeSelector from '../components/ResumeBuilder/ResumeSelector';
 
 function ResumeBuilder() {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
   return (
-    <div className="flex flex-col h-screen">      
+    <div className="flex flex-col h-screen">
+      {/* Resume Selector */}
+      <ResumeSelector />
+      
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Mobile Tabs */}
         <div className="lg:hidden flex border-b">
