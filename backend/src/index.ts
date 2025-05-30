@@ -30,7 +30,7 @@ app.use(express.json());
 
 // Initialize routes
 app.use("/auth", initAuthRoutes(db));
-app.use("/api/experience", initExperienceRoutes(db));
+app.use("/api/experiences", initExperienceRoutes(db));
 app.use("/api/header", initHeaderRoutes(db));
 app.use("/api/skills", initSkillsRoutes(db));
 app.use("/api/education", initEducationRoutes(db));

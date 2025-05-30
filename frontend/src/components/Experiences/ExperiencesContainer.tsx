@@ -34,7 +34,7 @@ const ExperiencesContainer = () => {
         return;
       }
 
-      const endpoint = `/api/experience/user/${user.id}/bank`;
+      const endpoint = `/api/experiences/user/${user.id}/bank`;
       const response = await api.get<FrontendExperienceSection>(endpoint);
       setExperiences(response.data.items);
     } catch (err: any) {
@@ -62,7 +62,7 @@ const ExperiencesContainer = () => {
 
   const handleAddExperience = async (data: ExperienceFormData) => {
     try {
-      await api.post(`/api/experience`, {
+      await api.post(`/api/experiences`, {
         userId: user?.id,
         companyName: data.companyName,
         position: data.position,
@@ -85,7 +85,7 @@ const ExperiencesContainer = () => {
     data: ExperienceFormData
   ) => {
     try {
-      await api.put(`/api/experience/${experienceId}`, {
+      await api.put(`/api/experiences/${experienceId}`, {
         companyName: data.companyName,
         position: data.position,
         location: data.location,
@@ -104,7 +104,7 @@ const ExperiencesContainer = () => {
 
   const handleDeleteExperience = async (experienceId: number) => {
     try {
-      await api.delete(`/api/experience/${experienceId}`);
+      await api.delete(`/api/experiences/${experienceId}`);
 
       // Refresh the experiences list
       await fetchExperiences();
