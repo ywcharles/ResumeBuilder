@@ -40,17 +40,11 @@ const formatDateForMonthInput = (dateString: string): string => {
 
 const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   const [user] = useUser();
-  const { updateSectionContent } = useResumeStore();
+  const { updateSectionContent, isLoadingResume } = useResumeStore();
   const { experienceBank, isLoading, error, fetchExperienceBank } = useExperiences();
   const [showBank, setShowBank] = useState(false);
   const experienceData = section.content as ExperienceSection;
   
-  useEffect(() => {
-    if (experienceData.items.length === 0 && user?.id) {
-      setShowBank(true);
-      fetchExperienceBank();
-    }
-  }, [experienceData.items.length, user?.id, fetchExperienceBank]);
 
   const addExperience = () => {
     const newItem: ExperienceItem = {

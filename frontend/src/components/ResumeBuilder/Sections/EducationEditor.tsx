@@ -13,17 +13,10 @@ interface EducationEditorProps {
 
 const EducationEditor = ({ section }: EducationEditorProps) => {
   const [user] = useUser();
-  const { updateSectionContent } = useResumeStore();
+  const { updateSectionContent, isLoadingResume } = useResumeStore();
   const { educationBank, isLoading, error, fetchEducationBank } = useEducation();
   const [showBank, setShowBank] = useState(false);
   const educationData = section.content as EducationSection;
-
-  useEffect(() => {
-    if (educationData.items.length === 0 && user?.id) {
-      setShowBank(true);
-      fetchEducationBank();
-    }
-  }, [educationData.items.length, user?.id, fetchEducationBank]);
   
   const addEducation = () => {
     const newItem: EducationItem = {

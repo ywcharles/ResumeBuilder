@@ -12,17 +12,10 @@ interface SkillsEditorProps {
 
 const SkillsEditor = ({ section }: SkillsEditorProps) => {
   const [user] = useUser();
-  const { updateSectionContent } = useResumeStore();
+  const { updateSectionContent, isLoadingResume } = useResumeStore();
   const { skillsBank, isLoading, error, fetchSkillsBank } = useSkills();
   const [showBank, setShowBank] = useState(false);
   const skillsData = section.content as SkillsSection;
-
-  useEffect(() => {
-    if (skillsData.skills.length === 0 && user?.id) {
-      setShowBank(true);
-      fetchSkillsBank();
-    }
-  }, [skillsData.skills.length, user?.id, fetchSkillsBank]);
   
   const addSkill = () => {
     const updatedSkills = [...skillsData.skills, ''];

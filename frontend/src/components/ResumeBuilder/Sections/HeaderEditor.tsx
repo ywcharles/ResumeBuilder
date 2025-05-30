@@ -8,15 +8,15 @@ interface HeaderEditorProps {
 }
 
 const HeaderEditor = ({ section }: HeaderEditorProps) => {
-  const { updateSectionContent } = useResumeStore();
+  const { updateSectionContent, isLoadingResume } = useResumeStore();
   const { headerData, isLoading, error, updateHeaderData } = useHeader();
   const headerContent = section.content as HeaderSection;
   
   useEffect(() => {
-    if (headerData && (!headerContent.fullName || headerContent.fullName === 'Your Name')) {
+    if (headerData && !isLoadingResume && (!headerContent.fullName || headerContent.fullName === 'Your Name')) {
       updateSectionContent(section.id, headerData);
     }
-  }, [headerData, section.id, updateSectionContent, headerContent.fullName]);
+  }, [headerData, section.id, updateSectionContent, headerContent.fullName, isLoadingResume]);
   
   const handleChange = async (field: string, value: string | boolean) => {
     const updatedContent = { 
@@ -53,7 +53,7 @@ const HeaderEditor = ({ section }: HeaderEditorProps) => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingResume) {
     return (
       <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
         <div className="flex items-center justify-center py-8">

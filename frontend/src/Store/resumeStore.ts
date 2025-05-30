@@ -14,6 +14,7 @@ interface ResumeState {
   sections: ResumeSection[];
   activeSection: string | null;
   currentResumeId: number | null;
+  isLoadingResume: boolean;
   setCurrentResumeId: (id: number) => void;
   setActiveSection: (id: string | null) => void;
   addSection: (type: SectionType) => void;
@@ -22,6 +23,8 @@ interface ResumeState {
   updateSectionContent: (id: string, content: any) => void;
   reorderSections: (startIndex: number, endIndex: number) => void;
   toggleSectionVisibility: (id: string) => void;
+  resetSectionsForNewResume: () => void;
+  setIsLoadingResume: (loading: boolean) => void;
 }
 
 const defaultHeaderSection: HeaderSection = {
@@ -58,12 +61,12 @@ const defaultSkillsSection: SkillsSection = {
   skills: []
 };
 
-const initialSections: ResumeSection[] = [
+const createInitialSections = (): ResumeSection[] => [
   {
     id: generateId(),
     type: SectionType.HEADER,
     title: 'Contact Information',
-    content: defaultHeaderSection,
+    content: { ...defaultHeaderSection },
     isVisible: true
   },
   // {
@@ -77,31 +80,104 @@ const initialSections: ResumeSection[] = [
     id: generateId(),
     type: SectionType.EXPERIENCE,
     title: 'Work Experience',
-    content: defaultExperienceSection,
+    content: { ...defaultExperienceSection },
     isVisible: true
   },
   {
     id: generateId(),
     type: SectionType.EDUCATION,
     title: 'Education',
-    content: defaultEducationSection,
+    content: { ...defaultEducationSection },
     isVisible: true
   },
   {
     id: generateId(),
     type: SectionType.SKILLS,
     title: 'Skills',
-    content: defaultSkillsSection,
+    content: { ...defaultSkillsSection },
     isVisible: true
   }
 ];
 
-export const useResumeStore = create<ResumeState>((set) => ({
-  sections: initialSections,
+function getDefaultTitleForType(type: SectionType): string {
+  switch (type) {
+    case SectionType.HEADER:
+      return 'Contact Information';
+    case SectionType.SUMMARY:
+      return 'Professional Summary';
+    case SectionType.EXPERIENCE:
+      return 'Work Experience';
+    case SectionType.EDUCATION:
+      return 'Education';
+    case SectionType.SKILLS:
+      return 'Skills';
+    case SectionType.PROJECTS:
+      return 'Projects';
+    case SectionType.CERTIFICATIONS:
+      return 'Certifications';
+    case SectionType.LANGUAGES:
+      return 'Languages';
+    case SectionType.INTERESTS:
+      return 'Interests';
+    case SectionType.CUSTOM:
+      return 'Custom Section';
+    default:
+      return 'New Section';
+  }
+}
+
+function getDefaultContentForType(type: SectionType): any {
+  switch (type) {
+    case SectionType.HEADER:
+      return { ...defaultHeaderSection };
+    case SectionType.SUMMARY:
+      return { text: 'Experienced professional with a track record of success in...' };
+    case SectionType.EXPERIENCE:
+      return { ...defaultExperienceSection };
+    case SectionType.EDUCATION:
+      return { ...defaultEducationSection };
+    case SectionType.SKILLS:
+      return { ...defaultSkillsSection };
+    case SectionType.PROJECTS:
+      return { items: [] };
+    case SectionType.CERTIFICATIONS:
+      return { items: [] };
+    case SectionType.LANGUAGES:
+      return { items: [] };
+    case SectionType.INTERESTS:
+      return { items: [] };
+    case SectionType.CUSTOM:
+      return { title: 'Custom Section', content: '' };
+    default:
+      return {};
+  }
+}
+
+export const useResumeStore = create<ResumeState>((set, get) => ({
+  sections: createInitialSections(),
   activeSection: null,
   currentResumeId: null,
+  isLoadingResume: false,
   
-  setCurrentResumeId: (id) => set({ currentResumeId: id }),
+  setCurrentResumeId: (id) => {
+    const currentId = get().currentResumeId;
+    if (currentId !== id) {
+      // Reset sections when switching to a different resume
+      set({ 
+        currentResumeId: id, 
+        sections: createInitialSections(),
+        activeSection: null,
+        isLoadingResume: true
+      });
+    }
+  },
+
+  setIsLoadingResume: (loading) => set({ isLoadingResume: loading }),
+
+  resetSectionsForNewResume: () => set({ 
+    sections: createInitialSections(),
+    activeSection: null 
+  }),
   
   setActiveSection: (id) => set({ activeSection: id }),
   
@@ -148,35 +224,3 @@ export const useResumeStore = create<ResumeState>((set) => ({
     )
   }))
 }));
-
-function getDefaultTitleForType(type: SectionType): string {
-  switch (type) {
-    case SectionType.HEADER: return 'Contact Information';
-    // case SectionType.SUMMARY: return 'Professional Summary';
-    case SectionType.EXPERIENCE: return 'Work Experience';
-    case SectionType.EDUCATION: return 'Education';
-    case SectionType.SKILLS: return 'Skills';
-    case SectionType.PROJECTS: return 'Projects';
-    case SectionType.CERTIFICATIONS: return 'Certifications';
-    case SectionType.LANGUAGES: return 'Languages';
-    case SectionType.INTERESTS: return 'Interests';
-    case SectionType.CUSTOM: return 'Custom Section';
-    default: return 'New Section';
-  }
-}
-
-function getDefaultContentForType(type: SectionType): any {
-  switch (type) {
-    case SectionType.HEADER: return defaultHeaderSection;
-    // case SectionType.SUMMARY: return defaultSummarySection;
-    case SectionType.EXPERIENCE: return defaultExperienceSection;
-    case SectionType.EDUCATION: return defaultEducationSection;
-    case SectionType.SKILLS: return defaultSkillsSection;
-    case SectionType.PROJECTS: return { items: [] };
-    case SectionType.CERTIFICATIONS: return { items: [] };
-    case SectionType.LANGUAGES: return { items: [] };
-    case SectionType.INTERESTS: return { items: [] };
-    case SectionType.CUSTOM: return { title: 'Custom Section', content: '' };
-    default: return {};
-  }
-}
