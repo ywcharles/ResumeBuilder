@@ -20,6 +20,22 @@ VALUES (
   CURRENT_TIMESTAMP
 );
 
+INSERT INTO resume_header (resume_id, full_name, email, phone_number, linkedin_url, show_phone, show_linkedin, show_github, show_website, show_full_urls, created_at, updated_at)
+VALUES (
+  1,
+  'Navin George',
+  'navin.george@example.com',
+  '123-456-7890',
+  'https://www.linkedin.com/in/navin-george',
+  1,
+  1,
+  0,
+  0,
+  0,
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+);
+
 INSERT INTO skill (user_id, resume_id, name, order_num, created_at, updated_at)
 VALUES
 (1, 1, 'C#', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -113,6 +129,38 @@ INSERT INTO resume (user_id, title, created_at, updated_at)
 VALUES (
   2,
   'Data Resume',
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+);
+
+INSERT INTO resume_header (resume_id, full_name, email, phone_number, linkedin_url, show_phone, show_linkedin, show_github, show_website, show_full_urls, created_at, updated_at)
+VALUES (
+  2,
+  'Charles Wu',
+  'charles.wu@drexel.edu',
+  '123-456-7890',
+  'https://www.linkedin.com/in/charles-yuwu/',
+  1,
+  1,
+  0,
+  0,
+  0,
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+);
+
+INSERT INTO resume_header (resume_id, full_name, email, phone_number, linkedin_url, show_phone, show_linkedin, show_github, show_website, show_full_urls, created_at, updated_at)
+VALUES (
+  3,
+  'Charles Wu',
+  'charles.wu@student.com',
+  '123-456-7890',
+  'https://www.linkedin.com/in/charles-yuwu/',
+  1,
+  1,
+  0,
+  0,
+  0,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 );
@@ -369,6 +417,23 @@ INSERT INTO resume (user_id, title, created_at, updated_at)
 VALUES (
   3,
   'Computer Science Resume',
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+);
+
+INSERT INTO resume_header (resume_id, full_name, email, phone_number, linkedin_url, github_url, show_phone, show_linkedin, show_github, show_website, show_full_urls, created_at, updated_at)
+VALUES (
+  4,
+  'Alan Wang',
+  'alan.wang@drexel.edu',
+  '267-317-5258',
+  'https://www.linkedin.com/in/alan-wang-cs/',
+  'github.com/alanwang4523',
+  1,
+  1,
+  1,
+  0,
+  0,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 );
