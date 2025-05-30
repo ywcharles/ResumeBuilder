@@ -1,5 +1,5 @@
 import { Plus, Trash2, Check, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useResumeStore } from '../../../Store/resumeStore';
 import { ResumeSection, SkillsSection } from '../../../types';
 import Button from '../../../ui/Button';
@@ -16,8 +16,9 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
   const { skillsBank, isLoading, error, fetchSkillsBank, updateResumeSkills } = useSkills();
   const [showBank, setShowBank] = useState(false);
   const skillsData = section.content as SkillsSection;
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   
-  const saveSkillsToBackend = async (skills: string[]) => {
+  const saveSkillsToBackend = useCallback(async (skills: string[]) => {
     if (!currentResumeId) return;
     
     try {
@@ -25,7 +26,25 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     } catch (error) {
       console.error('Failed to save skills:', error);
     }
-  };
+  }, [currentResumeId, updateResumeSkills]);
+
+  const debouncedSave = useCallback((skills: string[]) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      saveSkillsToBackend(skills);
+    }, 500);
+  }, [saveSkillsToBackend]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
   
   const addSkill = async () => {
     const updatedSkills = [...skillsData.skills, ''];
@@ -34,10 +53,10 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
-    await saveSkillsToBackend(updatedSkills);
+    debouncedSave(updatedSkills);
   };
   
-  const updateSkill = async (index: number, value: string) => {
+  const updateSkill = (index: number, value: string) => {
     const updatedSkills = [...skillsData.skills];
     updatedSkills[index] = value;
     
@@ -46,7 +65,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
-    await saveSkillsToBackend(updatedSkills);
+    debouncedSave(updatedSkills);
   };
   
   const removeSkill = async (index: number) => {
@@ -58,7 +77,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
-    await saveSkillsToBackend(updatedSkills);
+    debouncedSave(updatedSkills);
   };
 
   const addFromBank = () => {
@@ -79,7 +98,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
-    await saveSkillsToBackend(updatedSkills);
+    debouncedSave(updatedSkills);
   };
 
   const isSkillAlreadyAdded = (skill: string): boolean => {
