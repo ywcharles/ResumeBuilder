@@ -4,7 +4,6 @@ import { EducationSection, EducationItem } from '../types';
 interface DatabaseEducationItem {
   id: number;
   user_id: number;
-  resume_id: number;
   institution: string;
   degree: string;
   field: string;
@@ -86,6 +85,24 @@ export const educationApi = {
     }
   },
 
+  async linkExistingEducation(
+    existingEducationId: number,
+    userId: number,
+    resumeId: number
+  ): Promise<{ message: string; educationId: number }> {
+    try {
+      const response = await api.post('/api/education', {
+        userId,
+        resumeId,
+        existingEducationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error linking existing education:', error);
+      throw error;
+    }
+  },
+
   async updateEducation(
     educationId: string,
     educationData: EducationItem
@@ -106,6 +123,19 @@ export const educationApi = {
       return response.data;
     } catch (error) {
       console.error('Error updating education:', error);
+      throw error;
+    }
+  },
+
+  async removeEducationFromResume(
+    resumeId: number,
+    educationId: string
+  ): Promise<{ message: string }> {
+    try {
+      const response = await api.delete(`/api/education/resume/${resumeId}/education/${educationId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error removing education from resume:', error);
       throw error;
     }
   },
