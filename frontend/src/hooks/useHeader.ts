@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { HeaderSection } from '../types';
 import { headerApi } from '../api/headerApi';
-import useUser from '../Store/useUserStore';
+import { useResumeStore } from '../Store/resumeStore';
 
 interface UseHeaderReturn {
   headerData: HeaderSection | null;
@@ -12,19 +12,26 @@ interface UseHeaderReturn {
 }
 
 export const useHeader = (): UseHeaderReturn => {
-  const [user] = useUser();
+  const { currentResumeId, setCurrentResumeId } = useResumeStore();
   const [headerData, setHeaderData] = useState<HeaderSection | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize with resume ID 1 if not set (temporary solution)
+  useEffect(() => {
+    if (!currentResumeId) {
+      setCurrentResumeId(1);
+    }
+  }, [currentResumeId, setCurrentResumeId]);
+
   const fetchHeaderData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!currentResumeId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await headerApi.getUserHeaderData(user.id);
+      const data = await headerApi.getResumeHeaderData(currentResumeId);
       setHeaderData(data);
     } catch (err) {
       setError('Failed to fetch header data');
@@ -32,28 +39,28 @@ export const useHeader = (): UseHeaderReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id]);
+  }, [currentResumeId]);
 
   const updateHeaderData = useCallback(async (headerData: HeaderSection) => {
-    if (!user?.id) throw new Error('User not found');
+    if (!currentResumeId) throw new Error('No resume selected');
 
     setError(null);
 
     try {
-      await headerApi.updateUserHeaderData(user.id, headerData);
+      await headerApi.updateResumeHeaderData(currentResumeId, headerData);
       setHeaderData(headerData);
     } catch (err) {
       setError('Failed to update header data');
       console.error('Error updating header data:', err);
       throw err;
     }
-  }, [user?.id]);
+  }, [currentResumeId]);
 
   useEffect(() => {
-    if (user?.id) {
+    if (currentResumeId) {
       fetchHeaderData();
     }
-  }, [user?.id, fetchHeaderData]);
+  }, [currentResumeId, fetchHeaderData]);
 
   return {
     headerData,
