@@ -13,12 +13,14 @@ interface EducationEditorProps {
 
 const EducationEditor = ({ section }: EducationEditorProps) => {
   const [user] = useUser();
-  const { updateSectionContent, isLoadingResume } = useResumeStore();
-  const { educationBank, isLoading, error, fetchEducationBank } = useEducation();
+  const { updateSectionContent, isLoadingResume, currentResumeId } = useResumeStore();
+  const { educationBank, isLoading, error, fetchEducationBank, saveEducation, updateEducation: updateEducationInDb, deleteEducation } = useEducation();
   const [showBank, setShowBank] = useState(false);
   const educationData = section.content as EducationSection;
   
-  const addEducation = () => {
+  const addEducation = async () => {
+    if (!user?.id || !currentResumeId) return;
+
     const newItem: EducationItem = {
       id: generateId(),
       institution: 'University Name',
@@ -35,6 +37,20 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    try {
+      const savedId = await saveEducation(newItem, currentResumeId);
+      const finalContent: EducationSection = {
+        ...updatedContent,
+        items: updatedContent.items.map(item => 
+          item.id === newItem.id ? { ...item, id: savedId } : item
+        )
+      };
+      updateSectionContent(section.id, finalContent);
+    } catch (error) {
+      console.error('Failed to save education:', error);
+      updateSectionContent(section.id, educationData);
+    }
   };
 
   const addFromBank = () => {
@@ -44,7 +60,9 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     }
   };
 
-  const addEducationFromBank = (bankEducation: EducationItem) => {
+  const addEducationFromBank = async (bankEducation: EducationItem) => {
+    if (!user?.id || !currentResumeId) return;
+
     const newItem: EducationItem = {
       ...bankEducation,
       id: generateId(),
@@ -57,6 +75,24 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     
     updateSectionContent(section.id, updatedContent);
     setShowBank(false);
+
+    try {
+      const savedId = await saveEducation(newItem, currentResumeId);
+      const finalContent: EducationSection = {
+        ...updatedContent,
+        items: updatedContent.items.map(item => 
+          item.id === newItem.id ? { ...item, id: savedId } : item
+        )
+      };
+      updateSectionContent(section.id, finalContent);
+    } catch (error) {
+      console.error('Failed to save education from bank:', error);
+      const rollbackContent: EducationSection = {
+        ...educationData,
+        items: educationData.items
+      };
+      updateSectionContent(section.id, rollbackContent);
+    }
   };
 
   const isEducationAlreadyAdded = (education: EducationItem): boolean => {
@@ -67,7 +103,7 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     );
   };
   
-  const updateEducation = (index: number, field: keyof EducationItem, value: string) => {
+  const updateEducation = async (index: number, field: keyof EducationItem, value: string) => {
     const updatedItems = [...educationData.items];
     updatedItems[index] = {
       ...updatedItems[index],
@@ -80,10 +116,21 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    const item = updatedItems[index];
+    if (item.id && !item.id.startsWith('new-') && !item.id.startsWith('temp-')) {
+      try {
+        await updateEducationInDb(item.id, item);
+      } catch (error) {
+        console.error('Failed to update education:', error);
+      }
+    }
   };
   
-  const removeEducation = (index: number) => {
+  const removeEducation = async (index: number) => {
     if (educationData.items.length <= 1) return;
+    
+    const itemToRemove = educationData.items[index];
     
     const updatedItems = [...educationData.items];
     updatedItems.splice(index, 1);
@@ -94,6 +141,14 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    if (itemToRemove.id && !itemToRemove.id.startsWith('new-') && !itemToRemove.id.startsWith('temp-')) {
+      try {
+        await deleteEducation(itemToRemove.id);
+      } catch (error) {
+        console.error('Failed to delete education:', error);
+      }
+    }
   };
 
   if (isLoading) {
