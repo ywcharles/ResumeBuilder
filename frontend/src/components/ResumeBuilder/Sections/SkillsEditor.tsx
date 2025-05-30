@@ -12,21 +12,32 @@ interface SkillsEditorProps {
 
 const SkillsEditor = ({ section }: SkillsEditorProps) => {
   const [user] = useUser();
-  const { updateSectionContent, isLoadingResume } = useResumeStore();
-  const { skillsBank, isLoading, error, fetchSkillsBank } = useSkills();
+  const { updateSectionContent, isLoadingResume, currentResumeId } = useResumeStore();
+  const { skillsBank, isLoading, error, fetchSkillsBank, updateResumeSkills } = useSkills();
   const [showBank, setShowBank] = useState(false);
   const skillsData = section.content as SkillsSection;
   
-  const addSkill = () => {
+  const saveSkillsToBackend = async (skills: string[]) => {
+    if (!currentResumeId) return;
+    
+    try {
+      await updateResumeSkills(currentResumeId, skills);
+    } catch (error) {
+      console.error('Failed to save skills:', error);
+    }
+  };
+  
+  const addSkill = async () => {
     const updatedSkills = [...skillsData.skills, ''];
     const updatedContent: SkillsSection = {
       skills: updatedSkills
     };
     
     updateSectionContent(section.id, updatedContent);
+    await saveSkillsToBackend(updatedSkills);
   };
   
-  const updateSkill = (index: number, value: string) => {
+  const updateSkill = async (index: number, value: string) => {
     const updatedSkills = [...skillsData.skills];
     updatedSkills[index] = value;
     
@@ -35,9 +46,10 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+    await saveSkillsToBackend(updatedSkills);
   };
   
-  const removeSkill = (index: number) => {
+  const removeSkill = async (index: number) => {
     const updatedSkills = [...skillsData.skills];
     updatedSkills.splice(index, 1);
     
@@ -46,6 +58,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+    await saveSkillsToBackend(updatedSkills);
   };
 
   const addFromBank = () => {
@@ -55,7 +68,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     }
   };
 
-  const addSkillFromBank = (skill: string) => {
+  const addSkillFromBank = async (skill: string) => {
     if (skillsData.skills.includes(skill)) {
       return;
     }
@@ -66,6 +79,7 @@ const SkillsEditor = ({ section }: SkillsEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+    await saveSkillsToBackend(updatedSkills);
   };
 
   const isSkillAlreadyAdded = (skill: string): boolean => {
