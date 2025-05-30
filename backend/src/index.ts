@@ -8,6 +8,7 @@ import initExperienceRoutes from './routes/experience.js';
 import initHeaderRoutes from './routes/header.js';
 import initSkillsRoutes from './routes/skills.js';
 import initEducationRoutes from './routes/education.js';
+import initResumeRoutes from './routes/resume.js';
 import cors from 'cors';
 
 let __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -33,6 +34,7 @@ app.use("/api/experiences", initExperienceRoutes(db));
 app.use("/api/header", initHeaderRoutes(db));
 app.use("/api/skills", initSkillsRoutes(db));
 app.use("/api/education", initEducationRoutes(db));
+app.use("/api/resumes", initResumeRoutes(db));
 
 app.get('/api/hello', (_req, res) => {
   res.json({ message: 'Hello from the backend!' });
