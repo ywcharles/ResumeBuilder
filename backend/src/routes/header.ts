@@ -1,76 +1,145 @@
 import express, { Request, Response } from "express";
 import { Database } from "sqlite";
-import { DatabaseUser, HeaderSection, UpdateHeaderRequest } from "../types/header.js";
+import { DatabaseUser, DatabaseResumeHeader, HeaderSection, UpdateHeaderRequest } from "../types/header.js";
 
 const router = express.Router();
 
 export default function initHeaderRoutes(db: Database) {
-  router.get("/:userId", async (req: Request, res: Response) => {
+  router.get("/:resumeId", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.params;
+      const { resumeId } = req.params;
       
-      const user = await db.get(
-        "SELECT id, first_name, last_name, email, phone_number, linkedin_url FROM user WHERE id = ?",
-        userId
-      ) as DatabaseUser | undefined;
+      const resumeHeader = await db.get(
+        "SELECT * FROM resume_header WHERE resume_id = ?",
+        resumeId
+      ) as DatabaseResumeHeader | undefined;
       
-      if (!user) {
-        res.status(404).json({ error: "User not found" });
+      if (!resumeHeader) {
+        const resume = await db.get(
+          "SELECT * FROM resume WHERE id = ?",
+          resumeId
+        );
+        
+        if (!resume) {
+          res.status(404).json({ error: "Resume not found" });
+          return;
+        }
+        
+        const user = await db.get(
+          "SELECT id, first_name, last_name, email, phone_number, linkedin_url FROM user WHERE id = ?",
+          resume.user_id
+        ) as DatabaseUser | undefined;
+        
+        if (!user) {
+          res.status(404).json({ error: "User not found" });
+          return;
+        }
+        
+        // Create default header data from user
+        const defaultHeaderData: HeaderSection = {
+          fullName: `${user.first_name} ${user.last_name}`,
+          title: "",
+          contact: {
+            email: user.email,
+            phone: user.phone_number || "",
+            linkedin: user.linkedin_url || "",
+            github: "",
+            website: ""
+          },
+          showPhone: !!user.phone_number,
+          showLinkedIn: !!user.linkedin_url,
+          showGitHub: false,
+          showWebsite: false,
+          showFullUrls: false
+        };
+        
+        await db.run(
+          `INSERT INTO resume_header (
+            resume_id, full_name, email, phone_number, linkedin_url, 
+            show_phone, show_linkedin, show_github, show_website, show_full_urls,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          resumeId,
+          defaultHeaderData.fullName,
+          defaultHeaderData.contact.email,
+          defaultHeaderData.contact.phone || null,
+          defaultHeaderData.contact.linkedin || null,
+          defaultHeaderData.showPhone,
+          defaultHeaderData.showLinkedIn,
+          defaultHeaderData.showGitHub,
+          defaultHeaderData.showWebsite,
+          defaultHeaderData.showFullUrls,
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
+        
+        res.json(defaultHeaderData);
         return;
       }
       
       const headerData: HeaderSection = {
-        fullName: `${user.first_name} ${user.last_name}`,
-        title: "", // Can be added to user table later if needed
+        fullName: resumeHeader.full_name,
+        title: "",
         contact: {
-          email: user.email,
-          phone: user.phone_number || "",
-          linkedin: user.linkedin_url || "",
-          github: "", // Can be added to user table later if needed
-          website: "" // Can be added to user table later if needed
+          email: resumeHeader.email,
+          phone: resumeHeader.phone_number || "",
+          linkedin: resumeHeader.linkedin_url || "",
+          github: resumeHeader.github_url || "",
+          website: resumeHeader.website_url || ""
         },
-        showPhone: !!user.phone_number,
-        showLinkedIn: !!user.linkedin_url,
-        showGitHub: false, // Default to false since not in user table yet
-        showFullUrls: false // Default to false
+        showPhone: resumeHeader.show_phone,
+        showLinkedIn: resumeHeader.show_linkedin,
+        showGitHub: resumeHeader.show_github,
+        showWebsite: resumeHeader.show_website,
+        showFullUrls: resumeHeader.show_full_urls
       };
       
       res.json(headerData);
     } catch (error) {
-      console.error("Error fetching user header data:", error);
-      res.status(500).json({ error: "Failed to fetch user header data" });
+      console.error("Error fetching resume header data:", error);
+      res.status(500).json({ error: "Failed to fetch resume header data" });
     }
   });
 
-  router.put("/:userId", async (req: Request, res: Response) => {
+  router.put("/:resumeId", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.params;
-      const { fullName, contact }: UpdateHeaderRequest = req.body;
-      
-      const nameParts = fullName.trim().split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
+      const { resumeId } = req.params;
+      const { fullName, contact, showPhone, showLinkedIn, showGitHub, showWebsite, showFullUrls }: UpdateHeaderRequest = req.body;
       
       await db.run(
-        `UPDATE user SET 
-          first_name = ?, 
-          last_name = ?, 
+        `UPDATE resume_header SET 
+          full_name = ?, 
           email = ?, 
           phone_number = ?, 
-          linkedin_url = ?
-        WHERE id = ?`,
-        firstName,
-        lastName,
+          linkedin_url = ?,
+          github_url = ?,
+          website_url = ?,
+          show_phone = ?,
+          show_linkedin = ?,
+          show_github = ?,
+          show_website = ?,
+          show_full_urls = ?,
+          updated_at = ?
+        WHERE resume_id = ?`,
+        fullName,
         contact.email,
         contact.phone || null,
         contact.linkedin || null,
-        userId
+        contact.github || null,
+        contact.website || null,
+        showPhone,
+        showLinkedIn,
+        showGitHub,
+        showWebsite || false,
+        showFullUrls,
+        new Date().toISOString(),
+        resumeId
       );
       
-      res.json({ message: "User header data updated successfully" });
+      res.json({ message: "Resume header data updated successfully" });
     } catch (error) {
-      console.error("Error updating user header data:", error);
-      res.status(500).json({ error: "Failed to update user header data" });
+      console.error("Error updating resume header data:", error);
+      res.status(500).json({ error: "Failed to update resume header data" });
     }
   });
 
