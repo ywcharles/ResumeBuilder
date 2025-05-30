@@ -34,13 +34,21 @@ VALUES (
   CURRENT_TIMESTAMP
 );
 
-INSERT INTO skill (user_id, resume_id, name, order_num, created_at, updated_at)
+INSERT INTO skill (user_id, name, created_at, updated_at)
 VALUES
-(1, 1, 'C#', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 1, 'Python', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 1, 'Java', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 1, 'React', 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 1, 'PostgreSQL', 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'C#', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'Python', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'Java', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'React', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'PostgreSQL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO resume_skill (resume_id, skill_id, order_num, created_at, updated_at)
+VALUES
+(1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 2, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 3, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 4, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 5, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO coursework (resume_id, user_id, name, created_at, updated_at)
 VALUES
@@ -48,9 +56,13 @@ VALUES
 (1, 1, 'Database Systems', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (1, 1, 'Web Development', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+INSERT INTO education (user_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
 VALUES
-(1, 1, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2020-09', '2025-06', '3.7', "Dean's List for 4 terms.", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2020-09', '2025-06', '3.7', "Dean's List for 4 terms.", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO resume_education (resume_id, education_id, order_num, created_at, updated_at)
+VALUES
+(1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO experience (user_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
@@ -183,27 +195,43 @@ VALUES (
   CURRENT_TIMESTAMP
 );
 
--- Skills for Frontend Resume
-INSERT INTO skill (user_id, resume_id, name, order_num, created_at, updated_at)
+INSERT INTO skill (user_id, name, created_at, updated_at)
 VALUES
-(2, 2, 'React', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'TypeScript', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'Node.JS', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'Tailwind CSS', 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'Material UI', 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'HTML', 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'CSS', 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+-- Frontend skills
+(2, 'React', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'TypeScript', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Node.JS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Tailwind CSS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Material UI', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'HTML', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'CSS', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+-- Data skills
+(2, 'Python', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Matlab', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'OpenCV', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Pandas', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Puppeteer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'MySQL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Skills for Data Resume
-INSERT INTO skill (user_id, resume_id, name, order_num, created_at, updated_at)
+INSERT INTO resume_skill (resume_id, skill_id, order_num, created_at, updated_at)
 VALUES
-(2, 3, 'Node.JS', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Python', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Matlab', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'OpenCV', 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Pandas', 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'Puppeteer', 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 3, 'MySQL', 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 6, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- React
+(2, 7, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- TypeScript
+(2, 8, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Node.JS
+(2, 9, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Tailwind CSS
+(2, 10, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Material UI
+(2, 11, 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- HTML
+(2, 12, 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- CSS
+
+INSERT INTO resume_skill (resume_id, skill_id, order_num, created_at, updated_at)
+VALUES
+(3, 8, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Node.JS
+(3, 13, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Python
+(3, 14, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Matlab
+(3, 15, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- OpenCV
+(3, 16, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Pandas
+(3, 17, 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Puppeteer
+(3, 18, 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- MySQL
 
 -- Coursework for Frontend Resume
 INSERT INTO coursework (resume_id, user_id, name, created_at, updated_at)
@@ -219,15 +247,15 @@ VALUES
 (3, 2, 'Data Structures', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 2, 'Software Architecture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Education for Frontend Resume
-INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+INSERT INTO education (user_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
 VALUES
-(2, 2, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2025-06', '3.8', 'Co-op Program. Focus on Human-Computer Interaction and Software Engineering.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2025-06', '3.8', 'Co-op Program. Focus on Human-Computer Interaction and Software Engineering.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2025-06', '3.8', 'Co-op Program. Concentration in Data Science and Machine Learning.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Education for Data Resume
-INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+INSERT INTO resume_education (resume_id, education_id, order_num, created_at, updated_at)
 VALUES
-(2, 3, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2025-06', '3.8', 'Co-op Program. Concentration in Data Science and Machine Learning.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 2, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Frontend Resume
+(3, 3, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- Data Resume
 
 INSERT INTO experience (user_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
@@ -264,7 +292,7 @@ VALUES
 (3, 12, 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- WebCam Rock-Paper-Scissor
 (3, 13, 8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- Paper Scanner
 
--- Bullet Points for Frontend Resume - URBN
+-- Bullet Points for URBN
 INSERT INTO bullet_point (experience_id, content, order_num, created_at, updated_at)
 VALUES
 (4, 'Built a Python script to automate survey keyword extraction, cutting manual search time by 70%', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -360,11 +388,11 @@ VALUES
 
 INSERT INTO resume_experience_bullet (resume_experience_id, bullet_point_id, is_selected, order_num, created_at, updated_at)
 VALUES
--- Data Resume URBN bullets (resume_experience_id = 9) - Different bullets for data focus
-(9, 14, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Python script
-(9, 15, 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Analysis
-(9, 16, 1, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- BI queries
-(9, 17, 1, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Reports
+-- Data Resume URBN bullets (resume_experience_id = 9)
+(9, 14, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 15, 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 16, 1, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 17, 1, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- Data Resume UPenn bullets (resume_experience_id = 10)
 (10, 18, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (10, 19, 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -512,25 +540,39 @@ VALUES
 (4, 3, 'Discrete Math', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (4, 3, 'Linear Algebra', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Education
-INSERT INTO education (user_id, resume_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
+INSERT INTO education (user_id, institution, degree, field, location, start_date, end_date, gpa, description, created_at, updated_at)
 VALUES
-(3, 4, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2026-06', '3.9', 'Co-op Program. Concentration in Software Engineering and AI. Dean''s List for 4 terms.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 'Drexel University', 'Bachelor of Science', 'Computer Science', 'Philadelphia, PA', '2021-09', '2026-06', '3.9', 'Co-op Program. Concentration in Software Engineering and AI. Dean''s List for 4 terms.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- Insert skills 
-INSERT INTO skill (user_id, resume_id, name, order_num, created_at, updated_at)
+INSERT INTO resume_education (resume_id, education_id, order_num, created_at, updated_at)
+VALUES
+(4, 4, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO skill (user_id, name, created_at, updated_at)
 VALUES
 -- Programming Languages
-(3, 4, 'C#', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Python', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'TypeScript', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Java', 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'C#', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'Python', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'TypeScript', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'Java', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- Database skills
-(3, 4, 'PL/SQL', 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'MySQL', 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'SQLite', 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Firebase', 8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 4, 'Supabase', 9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(3, 'PL/SQL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'MySQL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'SQLite', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'Firebase', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'Supabase', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO resume_skill (resume_id, skill_id, order_num, created_at, updated_at)
+VALUES
+(4, 19, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- C#
+(4, 20, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Python
+(4, 21, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- TypeScript
+(4, 22, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Java
+(4, 23, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- PL/SQL
+(4, 24, 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- MySQL
+(4, 25, 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- SQLite
+(4, 26, 8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), -- Firebase
+(4, 27, 9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP); -- Supabase
 
 INSERT INTO experience (user_id, company_name, position, location, start_date, end_date, created_at, updated_at)
 VALUES
