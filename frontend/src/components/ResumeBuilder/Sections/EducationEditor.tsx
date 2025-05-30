@@ -1,16 +1,29 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Check, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useResumeStore } from '../../../Store/resumeStore';
 import { ResumeSection, EducationSection, EducationItem } from '../../../types';
 import Button from '../../../ui/Button';
 import { generateId } from '../../../utils/utils';
+import { useEducation } from '../../../hooks/useEducation';
+import useUser from '../../../Store/useUserStore';
 
 interface EducationEditorProps {
   section: ResumeSection;
 }
 
 const EducationEditor = ({ section }: EducationEditorProps) => {
+  const [user] = useUser();
   const { updateSectionContent } = useResumeStore();
+  const { educationBank, isLoading, error, fetchEducationBank } = useEducation();
+  const [showBank, setShowBank] = useState(false);
   const educationData = section.content as EducationSection;
+
+  useEffect(() => {
+    if (educationData.items.length === 0 && user?.id) {
+      setShowBank(true);
+      fetchEducationBank();
+    }
+  }, [educationData.items.length, user?.id, fetchEducationBank]);
   
   const addEducation = () => {
     const newItem: EducationItem = {
@@ -29,6 +42,36 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+  };
+
+  const addFromBank = () => {
+    setShowBank(true);
+    if (user?.id) {
+      fetchEducationBank();
+    }
+  };
+
+  const addEducationFromBank = (bankEducation: EducationItem) => {
+    const newItem: EducationItem = {
+      ...bankEducation,
+      id: generateId(),
+    };
+    
+    const updatedContent: EducationSection = {
+      ...educationData,
+      items: [...educationData.items, newItem]
+    };
+    
+    updateSectionContent(section.id, updatedContent);
+    setShowBank(false);
+  };
+
+  const isEducationAlreadyAdded = (education: EducationItem): boolean => {
+    return educationData.items.some(item => 
+      item.institution === education.institution && 
+      item.degree === education.degree &&
+      item.field === education.field
+    );
   };
   
   const updateEducation = (index: number, field: keyof EducationItem, value: string) => {
@@ -60,9 +103,114 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     updateSectionContent(section.id, updatedContent);
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500">Loading education...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="mb-6">
+        <div className="flex gap-3 mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+          <Button
+            variant="outline"
+            leftIcon={<Plus size={16} />}
+            onClick={addEducation}
+            className="bg-white hover:bg-gray-50 border-gray-300"
+          >
+            Add New Education
+          </Button>
+          
+          <Button
+            variant="outline"
+            leftIcon={<Plus size={16} />}
+            onClick={addFromBank}
+            className="bg-white hover:bg-gray-50 border-gray-300"
+            disabled={!user}
+            title={!user ? "Please log in to use education bank" : "Add from your education bank"}
+          >
+            From Bank
+          </Button>
+        </div>
+
+        {/* Education Bank Modal/Dropdown */}
+        {showBank && (
+          <div className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="text-md font-medium text-blue-900">Education Bank</h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowBank(false)}
+                className="text-blue-700 hover:text-blue-900"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+
+            {isLoading ? (
+              <div className="text-center py-4 text-blue-700">
+                Loading education bank...
+              </div>
+            ) : error ? (
+              <div className="text-center py-4 text-red-600">
+                {error}
+              </div>
+            ) : educationBank && educationBank.items.length > 0 ? (
+              <div className="space-y-3">
+                {educationBank.items.map((education, index) => {
+                  const isAlreadyAdded = isEducationAlreadyAdded(education);
+                  return (
+                    <div key={index} className="flex items-center justify-between p-3 bg-white border border-blue-200 rounded">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{education.institution}</div>
+                        <div className="text-sm text-gray-600">
+                          {education.degree}{education.field ? `, ${education.field}` : ''}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {education.startDate} - {education.endDate}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => addEducationFromBank(education)}
+                        disabled={isAlreadyAdded}
+                        className={`ml-2 ${
+                          isAlreadyAdded 
+                            ? 'text-gray-400 cursor-not-allowed' 
+                            : 'text-blue-600 hover:text-blue-800 hover:bg-blue-100'
+                        }`}
+                      >
+                        {isAlreadyAdded ? <Check size={16} /> : <Plus size={16} />}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : educationBank && educationBank.items.length === 0 ? (
+              <div className="text-center py-4 text-blue-700">
+                No education found in your bank. Add some education first!
+              </div>
+            ) : null}
+          </div>
+        )}
+
         <div className="space-y-6">
           {educationData.items.map((item, index) => (
             <div key={item.id} className="p-4 border border-gray-200 rounded-md bg-gray-50">
@@ -188,14 +336,11 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
             </div>
           ))}
           
-          <Button
-            variant="outline"
-            leftIcon={<Plus size={16} />}
-            onClick={addEducation}
-            className="w-full"
-          >
-            Add Education
-          </Button>
+          {educationData.items.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>No education selected. Use the buttons above to add your education.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
