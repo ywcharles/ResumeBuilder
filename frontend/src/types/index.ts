@@ -33,9 +33,9 @@ export interface Contact {
   email: string;
   phone: string;
   // location: string;
-  linkedin?: string;
-  github?: string;
-  website?: string;
+  linkedin: string;
+  github: string;
+  website: string;
 }
 
 export interface HeaderSection {
@@ -45,6 +45,7 @@ export interface HeaderSection {
   showPhone: boolean;
   showLinkedIn: boolean;
   showGitHub: boolean;
+  showWebsite?: boolean;
   showFullUrls: boolean;
 }
 
