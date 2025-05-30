@@ -18,6 +18,25 @@ CREATE TABLE resume (
   FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+CREATE TABLE resume_header (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  resume_id INTEGER NOT NULL UNIQUE,
+  full_name VARCHAR(100),
+  email VARCHAR(100),
+  phone_number VARCHAR(15),
+  linkedin_url VARCHAR(100),
+  github_url VARCHAR(100),
+  website_url VARCHAR(100),
+  show_phone BOOLEAN DEFAULT 0,
+  show_linkedin BOOLEAN DEFAULT 0,
+  show_github BOOLEAN DEFAULT 0,
+  show_website BOOLEAN DEFAULT 0,
+  show_full_urls BOOLEAN DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (resume_id) REFERENCES resume(id)
+);
+
 CREATE TABLE skill (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
