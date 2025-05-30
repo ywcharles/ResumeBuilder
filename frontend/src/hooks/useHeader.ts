@@ -17,13 +17,6 @@ export const useHeader = (): UseHeaderReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize with resume ID 1 if not set (temporary solution)
-  useEffect(() => {
-    if (!currentResumeId) {
-      setCurrentResumeId(1);
-    }
-  }, [currentResumeId, setCurrentResumeId]);
-
   const fetchHeaderData = useCallback(async () => {
     if (!currentResumeId) return;
 
