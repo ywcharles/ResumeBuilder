@@ -13,6 +13,8 @@ import { generateId } from '../utils/utils';
 interface ResumeState {
   sections: ResumeSection[];
   activeSection: string | null;
+  currentResumeId: number | null;
+  setCurrentResumeId: (id: number) => void;
   setActiveSection: (id: string | null) => void;
   addSection: (type: SectionType) => void;
   removeSection: (id: string) => void;
@@ -30,11 +32,13 @@ const defaultHeaderSection: HeaderSection = {
     phone: '(123) 456-7890',
     // location: 'City, State',
     linkedin: 'linkedin.com/in/yourprofile',
-    // github: 'github.com/yourusername',
+    github: 'github.com/yourusername',
+    website: 'yourwebsite.com'
   },
   showPhone: true,
   showLinkedIn: true,
   showGitHub: true,
+  showWebsite: false,
   showFullUrls: false
 };
 
@@ -95,6 +99,9 @@ const initialSections: ResumeSection[] = [
 export const useResumeStore = create<ResumeState>((set) => ({
   sections: initialSections,
   activeSection: null,
+  currentResumeId: null,
+  
+  setCurrentResumeId: (id) => set({ currentResumeId: id }),
   
   setActiveSection: (id) => set({ activeSection: id }),
   
