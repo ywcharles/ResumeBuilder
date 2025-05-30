@@ -1,15 +1,6 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
-
-export interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  created_at: string;
-  phone_number: string | null;
-  linkedin_url: string | null;
-}
+import { User } from '../types'
 
 interface UserState {
   user: User | null

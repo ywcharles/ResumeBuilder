@@ -33,7 +33,7 @@ const SortableItem = ({ id, children, className, isActive, onClick }: SortableIt
       ref={setNodeRef}
       style={style}
       className={cn(
-        'bg-white rounded-lg border mb-4 overflow-hidden transition-all',
+        'bg-white rounded-lg border overflow-hidden transition-all',
         isDragging && 'opacity-60 shadow-xl',
         isActive && 'ring-2 ring-blue-500',
         className

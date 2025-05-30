@@ -6,6 +6,16 @@ export interface ResumeSection {
   isVisible: boolean;
 }
 
+export interface User {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+  phone_number?: string;
+  linkedin_url?: string;
+}
+
 export enum SectionType {
   HEADER = 'header',
   SUMMARY = 'summary',
@@ -23,9 +33,9 @@ export interface Contact {
   email: string;
   phone: string;
   // location: string;
-  linkedin?: string;
-  github?: string;
-  website?: string;
+  linkedin: string;
+  github: string;
+  website: string;
 }
 
 export interface HeaderSection {
@@ -35,6 +45,7 @@ export interface HeaderSection {
   showPhone: boolean;
   showLinkedIn: boolean;
   showGitHub: boolean;
+  showWebsite?: boolean;
   showFullUrls: boolean;
 }
 
@@ -50,8 +61,8 @@ export interface ExperienceItem {
   startDate: string;
   endDate: string;
   current: boolean;
-  description: string[];
   bullets: string[];
+  fromBank?: boolean;
 }
 
 export interface ExperienceSection {
@@ -75,11 +86,7 @@ export interface EducationSection {
 }
 
 export interface SkillsSection {
-  categories: {
-    id: string;
-    name: string;
-    skills: string[];
-  }[];
+  skills: string[];
 }
 
 export interface ProjectItem {
