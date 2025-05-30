@@ -10,8 +10,10 @@ interface UseEducationReturn {
   fetchEducationBank: () => Promise<void>;
   addEducationFromBank: (education: EducationItem) => EducationItem;
   saveEducation: (educationData: EducationItem, resumeId: number) => Promise<string>;
+  linkEducationFromBank: (existingEducationId: number, resumeId: number) => Promise<string>;
   updateEducation: (educationId: string, educationData: EducationItem) => Promise<void>;
-  deleteEducation: (educationId: string) => Promise<void>;
+  removeEducationFromResume: (resumeId: number, educationId: string) => Promise<void>;
+  deleteEducationFromBank: (educationId: string) => Promise<void>;
   fetchResumeEducations: (resumeId: number) => Promise<EducationSection>;
 }
 
@@ -69,6 +71,24 @@ export const useEducation = (): UseEducationReturn => {
     }
   }, [user?.id]);
 
+  const linkEducationFromBank = useCallback(async (
+    existingEducationId: number,
+    resumeId: number
+  ): Promise<string> => {
+    if (!user?.id) throw new Error('User not found');
+
+    setError(null);
+
+    try {
+      const response = await educationApi.linkExistingEducation(existingEducationId, user.id, resumeId);
+      return response.educationId.toString();
+    } catch (err) {
+      setError('Failed to link education from bank');
+      console.error('Error linking education from bank:', err);
+      throw err;
+    }
+  }, [user?.id]);
+
   const updateEducation = useCallback(async (
     educationId: string,
     educationData: EducationItem
@@ -84,14 +104,29 @@ export const useEducation = (): UseEducationReturn => {
     }
   }, []);
 
-  const deleteEducation = useCallback(async (educationId: string): Promise<void> => {
+  const removeEducationFromResume = useCallback(async (
+    resumeId: number,
+    educationId: string
+  ): Promise<void> => {
+    setError(null);
+
+    try {
+      await educationApi.removeEducationFromResume(resumeId, educationId);
+    } catch (err) {
+      setError('Failed to remove education from resume');
+      console.error('Error removing education from resume:', err);
+      throw err;
+    }
+  }, []);
+
+  const deleteEducationFromBank = useCallback(async (educationId: string): Promise<void> => {
     setError(null);
 
     try {
       await educationApi.deleteEducation(educationId);
     } catch (err) {
-      setError('Failed to delete education');
-      console.error('Error deleting education:', err);
+      setError('Failed to delete education from bank');
+      console.error('Error deleting education from bank:', err);
       throw err;
     }
   }, []);
@@ -115,8 +150,10 @@ export const useEducation = (): UseEducationReturn => {
     fetchEducationBank,
     addEducationFromBank,
     saveEducation,
+    linkEducationFromBank,
     updateEducation,
-    deleteEducation,
+    removeEducationFromResume,
+    deleteEducationFromBank,
     fetchResumeEducations
   };
 };
