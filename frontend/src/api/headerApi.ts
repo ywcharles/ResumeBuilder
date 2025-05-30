@@ -20,19 +20,6 @@ export const headerApi = {
       console.error('Error updating resume header data:', error);
       throw error;
     }
-  },
-
-  // Legacy methods for backward compatibility
-  async getUserHeaderData(userId: number): Promise<HeaderSection> {
-    // For now, assume resume ID 1 for the first user's resume
-    // This should be replaced with proper resume selection logic
-    return this.getResumeHeaderData(1);
-  },
-
-  async updateUserHeaderData(userId: number, headerData: HeaderSection): Promise<{ message: string }> {
-    // For now, assume resume ID 1 for the first user's resume
-    // This should be replaced with proper resume selection logic
-    return this.updateResumeHeaderData(1, headerData);
   }
 };
 
