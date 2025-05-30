@@ -2,12 +2,12 @@ import React, { ChangeEvent, FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
 
 export interface ExperienceFormData {
-  company_name: string;
-  description: string;
+  companyName: string;
+  position: string;
   location: string;
-  start_date: string;
-  end_date: string;
-  bullet_points: string[];
+  startDate: string;
+  endDate: string;
+  bullets: Array<{ content: string }>;
 }
 
 interface ExperienceFormModalProps {
@@ -33,19 +33,19 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
   };
 
   const handleBulletPointChange = (index: number, value: string) => {
-    const newBullets = [...formData.bullet_points];
-    newBullets[index] = value;
-    setFormData(prev => ({ ...prev, bullet_points: newBullets }));
+    const newBullets = [...formData.bullets];
+    newBullets[index] = { content: value };
+    setFormData(prev => ({ ...prev, bullets: newBullets }));
   };
 
   const addBulletPoint = () => {
-    setFormData(prev => ({ ...prev, bullet_points: [...prev.bullet_points, ''] }));
+    setFormData(prev => ({ ...prev, bullets: [...prev.bullets, { content: '' }] }));
   };
 
   const removeBulletPoint = (index: number) => {
-    const updatedBullets = [...formData.bullet_points];
+    const updatedBullets = [...formData.bullets];
     updatedBullets.splice(index, 1);
-    setFormData(prev => ({ ...prev, bullet_points: updatedBullets }));
+    setFormData(prev => ({ ...prev, bullets: updatedBullets }));
   };
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -61,20 +61,21 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
         <form onSubmit={handleFormSubmit}>
           <input
             type="text"
-            name="company_name"
+            name="companyName"
             placeholder="Company Name"
-            value={formData.company_name}
+            value={formData.companyName}
             onChange={handleInputChange}
             className="w-full mb-3 p-2 border rounded"
             required
           />
           <input
             type="text"
-            name="description"
-            placeholder="Description"
-            value={formData.description}
+            name="position"
+            placeholder="Position/Job Title"
+            value={formData.position}
             onChange={handleInputChange}
             className="w-full mb-3 p-2 border rounded"
+            required
           />
           <input
             type="text"
@@ -88,28 +89,29 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
           <label className="block font-medium mb-1">Start Date</label>
           <input
             type="date"
-            name="start_date"
-            value={formData.start_date}
+            name="startDate"
+            value={formData.startDate}
             onChange={handleInputChange}
             className="w-full mb-3 p-2 border rounded"
+            required
           />
 
           <label className="block font-medium mb-1">End Date</label>
           <input
             type="date"
-            name="end_date"
-            value={formData.end_date}
+            name="endDate"
+            value={formData.endDate}
             onChange={handleInputChange}
             className="w-full mb-3 p-2 border rounded"
           />
 
           <div className="mb-4">
             <label className="block font-medium mb-2">Bullet Points</label>
-            {formData.bullet_points.map((point, i) => (
+            {formData.bullets.map((bullet, i) => (
               <div key={i} className="flex gap-2 items-center mb-2">
                 <input
                   type="text"
-                  value={point}
+                  value={bullet.content}
                   onChange={(e) => handleBulletPointChange(i, e.target.value)}
                   className="w-full p-2 border rounded"
                   placeholder={`Bullet Point ${i + 1}`}

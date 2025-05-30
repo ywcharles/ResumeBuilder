@@ -5,11 +5,13 @@ import ExperienceFormModal, { ExperienceFormData } from "./ExperienceFormModal";
 type Props = {
   experience_id: number;
   companyName: string;
-  description: string;
+  position: string;
   location: string;
   startDate: string;
   endDate: string;
-  bulletPoints?: string[];
+  bullets?: string[];
+  onUpdate?: (id: number, data: ExperienceFormData) => void;
+  onDelete?: (id: number) => void;
 };
 
 const ExperienceCard = (props: Props) => {
@@ -20,21 +22,26 @@ const ExperienceCard = (props: Props) => {
   const toggleExpand = () => setExpanded(!expanded);
 
   const [formData, setFormData] = useState<ExperienceFormData>({
-    company_name: props.companyName,
-    description: props.description,
+    companyName: props.companyName,
+    position: props.position,
     location: props.location,
-    start_date: props.startDate,
-    end_date: props.endDate,
-    bullet_points: props.bulletPoints || [],
+    startDate: props.startDate,
+    endDate: props.endDate,
+    bullets: (props.bullets || []).map(bullet => ({ content: bullet })),
   });
 
   const handleEditSubmit = (data: ExperienceFormData) => {
+    if (props.onUpdate) {
+      props.onUpdate(props.experience_id, data);
+    }
     console.log("Edit experience:", data);
-    // You can close modal here
     setIsEditOpen(false);
   };
 
   const handleDelete = () => {
+    if (props.onDelete) {
+      props.onDelete(props.experience_id);
+    }
     console.log("Delete experience with ID:", props.experience_id);
     setIsDeleteConfirmOpen(false);
   };
@@ -74,6 +81,7 @@ const ExperienceCard = (props: Props) => {
 
       {/* Experience Info */}
       <h3 className="text-lg font-semibold">{props.companyName}</h3>
+      <p className="text-md font-medium text-gray-700">{props.position}</p>
       {props.location && <p className="text-sm text-gray-600">{props.location}</p>}
       {props.startDate && (
         <p className="text-sm text-gray-500">
@@ -84,13 +92,10 @@ const ExperienceCard = (props: Props) => {
       {/* Expanded Content */}
       {expanded && (
         <div className="mt-2">
-          {props.description && (
-            <p className="text-sm italic">{props.description}</p>
-          )}
-          {props.bulletPoints?.length ? (
+          {props.bullets?.length ? (
             <ul className="list-disc pl-5 mt-2 text-sm space-y-1">
-              {props.bulletPoints.map((point, index) => (
-                <li key={index}>{point}</li>
+              {props.bullets.map((bullet, index) => (
+                <li key={index}>{bullet}</li>
               ))}
             </ul>
           ) : (

@@ -1,27 +1,34 @@
 import React, { useState } from 'react';
 import ExperienceFormModal, { ExperienceFormData } from './ExperienceFormModal';
 
-const AddExperienceButton: React.FC = () => {
+interface AddExperienceButtonProps {
+  onAdd?: (data: ExperienceFormData) => void;
+}
+
+const AddExperienceButton: React.FC<AddExperienceButtonProps> = ({ onAdd }) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<ExperienceFormData>({
-    company_name: '',
-    description: '',
+    companyName: '',
+    position: '',
     location: '',
-    start_date: '',
-    end_date: '',
-    bullet_points: [''],
+    startDate: '',
+    endDate: '',
+    bullets: [{ content: '' }],
   });
 
   const handleSubmit = (data: ExperienceFormData) => {
+    if (onAdd) {
+      onAdd(data);
+    }
     console.log('Submitted experience:', data);
-    // Optionally reset form here
+    // Reset form
     setFormData({
-      company_name: '',
-      description: '',
+      companyName: '',
+      position: '',
       location: '',
-      start_date: '',
-      end_date: '',
-      bullet_points: [''],
+      startDate: '',
+      endDate: '',
+      bullets: [{ content: '' }],
     });
   };
 
