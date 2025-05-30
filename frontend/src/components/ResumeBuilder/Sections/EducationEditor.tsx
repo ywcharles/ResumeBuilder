@@ -14,7 +14,16 @@ interface EducationEditorProps {
 const EducationEditor = ({ section }: EducationEditorProps) => {
   const [user] = useUser();
   const { updateSectionContent, isLoadingResume, currentResumeId } = useResumeStore();
-  const { educationBank, isLoading, error, fetchEducationBank, saveEducation, updateEducation: updateEducationInDb, deleteEducation } = useEducation();
+  const { 
+    educationBank, 
+    isLoading, 
+    error, 
+    fetchEducationBank, 
+    saveEducation, 
+    linkEducationFromBank,
+    updateEducation: updateEducationInDb, 
+    removeEducationFromResume 
+  } = useEducation();
   const [showBank, setShowBank] = useState(false);
   const educationData = section.content as EducationSection;
   
@@ -77,7 +86,7 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     setShowBank(false);
 
     try {
-      const savedId = await saveEducation(newItem, currentResumeId);
+      const savedId = await linkEducationFromBank(parseInt(bankEducation.id), currentResumeId);
       const finalContent: EducationSection = {
         ...updatedContent,
         items: updatedContent.items.map(item => 
@@ -86,7 +95,7 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
       };
       updateSectionContent(section.id, finalContent);
     } catch (error) {
-      console.error('Failed to save education from bank:', error);
+      console.error('Failed to link education from bank:', error);
       const rollbackContent: EducationSection = {
         ...educationData,
         items: educationData.items
@@ -142,11 +151,11 @@ const EducationEditor = ({ section }: EducationEditorProps) => {
     
     updateSectionContent(section.id, updatedContent);
 
-    if (itemToRemove.id && !itemToRemove.id.startsWith('new-') && !itemToRemove.id.startsWith('temp-')) {
+    if (itemToRemove.id && !itemToRemove.id.startsWith('new-') && !itemToRemove.id.startsWith('temp-') && currentResumeId) {
       try {
-        await deleteEducation(itemToRemove.id);
+        await removeEducationFromResume(currentResumeId, itemToRemove.id);
       } catch (error) {
-        console.error('Failed to delete education:', error);
+        console.error('Failed to remove education from resume:', error);
       }
     }
   };
