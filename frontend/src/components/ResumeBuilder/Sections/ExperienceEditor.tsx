@@ -40,13 +40,15 @@ const formatDateForMonthInput = (dateString: string): string => {
 
 const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
   const [user] = useUser();
-  const { updateSectionContent, isLoadingResume } = useResumeStore();
-  const { experienceBank, isLoading, error, fetchExperienceBank } = useExperiences();
+  const { updateSectionContent, isLoadingResume, currentResumeId } = useResumeStore();
+  const { experienceBank, isLoading, error, fetchExperienceBank, saveExperience, updateExperience: updateExperienceInDb, deleteExperience } = useExperiences();
   const [showBank, setShowBank] = useState(false);
   const experienceData = section.content as ExperienceSection;
   
 
-  const addExperience = () => {
+  const addExperience = async () => {
+    if (!user?.id || !currentResumeId) return;
+
     const newItem: ExperienceItem = {
       id: generateId(),
       company: 'New Company',
@@ -64,6 +66,20 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    try {
+      const savedId = await saveExperience(newItem, currentResumeId);
+      const finalContent: ExperienceSection = {
+        ...updatedContent,
+        items: updatedContent.items.map(item => 
+          item.id === newItem.id ? { ...item, id: savedId } : item
+        )
+      };
+      updateSectionContent(section.id, finalContent);
+    } catch (error) {
+      console.error('Failed to save experience:', error);
+      updateSectionContent(section.id, experienceData);
+    }
   };
 
   const addFromBank = () => {
@@ -73,7 +89,9 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     }
   };
 
-  const addExperienceFromBank = (bankExperience: ExperienceItem) => {
+  const addExperienceFromBank = async (bankExperience: ExperienceItem) => {
+    if (!user?.id || !currentResumeId) return;
+
     const newItem: ExperienceItem = {
       ...bankExperience,
       id: generateId(),
@@ -89,9 +107,27 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     
     updateSectionContent(section.id, updatedContent);
     setShowBank(false);
+
+    try {
+      const savedId = await saveExperience(newItem, currentResumeId);
+      const finalContent: ExperienceSection = {
+        ...updatedContent,
+        items: updatedContent.items.map(item => 
+          item.id === newItem.id ? { ...item, id: savedId } : item
+        )
+      };
+      updateSectionContent(section.id, finalContent);
+    } catch (error) {
+      console.error('Failed to save experience from bank:', error);
+      const rollbackContent: ExperienceSection = {
+        ...experienceData,
+        items: experienceData.items
+      };
+      updateSectionContent(section.id, rollbackContent);
+    }
   };
   
-  const updateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
+  const updateExperience = async (index: number, field: keyof ExperienceItem, value: any) => {
     if (experienceData.items[index].fromBank) {
       return;
     }
@@ -102,7 +138,6 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
       [field]: value
     };
     
-    // If "current" is checked, clear the end date
     if (field === 'current' && value === true) {
       updatedItems[index].endDate = '';
     }
@@ -113,9 +148,18 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    const item = updatedItems[index];
+    if (item.id && !item.id.startsWith('new-') && !item.id.startsWith('temp-')) {
+      try {
+        await updateExperienceInDb(item.id, item);
+      } catch (error) {
+        console.error('Failed to update experience:', error);
+      }
+    }
   };
   
-  const updateBullet = (experienceIndex: number, bulletIndex: number, value: string) => {
+  const updateBullet = async (experienceIndex: number, bulletIndex: number, value: string) => {
     if (experienceData.items[experienceIndex].fromBank) {
       return;
     }
@@ -135,9 +179,18 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    const item = updatedItems[experienceIndex];
+    if (item.id && !item.id.startsWith('new-') && !item.id.startsWith('temp-')) {
+      try {
+        await updateExperienceInDb(item.id, item);
+      } catch (error) {
+        console.error('Failed to update experience:', error);
+      }
+    }
   };
   
-  const addBullet = (experienceIndex: number) => {
+  const addBullet = async (experienceIndex: number) => {
     if (experienceData.items[experienceIndex].fromBank) {
       return;
     }
@@ -154,9 +207,18 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    const item = updatedItems[experienceIndex];
+    if (item.id && !item.id.startsWith('new-') && !item.id.startsWith('temp-')) {
+      try {
+        await updateExperienceInDb(item.id, item);
+      } catch (error) {
+        console.error('Failed to update experience:', error);
+      }
+    }
   };
   
-  const removeBullet = (experienceIndex: number, bulletIndex: number) => {
+  const removeBullet = async (experienceIndex: number, bulletIndex: number) => {
     if (experienceData.items[experienceIndex].fromBank) {
       return;
     }
@@ -176,9 +238,20 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    const item = updatedItems[experienceIndex];
+    if (item.id && !item.id.startsWith('new-') && !item.id.startsWith('temp-')) {
+      try {
+        await updateExperienceInDb(item.id, item);
+      } catch (error) {
+        console.error('Failed to update experience:', error);
+      }
+    }
   };
   
-  const removeExperience = (index: number) => {
+  const removeExperience = async (index: number) => {
+    const itemToRemove = experienceData.items[index];
+    
     const updatedItems = [...experienceData.items];
     updatedItems.splice(index, 1);
     
@@ -188,6 +261,14 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     };
     
     updateSectionContent(section.id, updatedContent);
+
+    if (itemToRemove.id && !itemToRemove.id.startsWith('new-') && !itemToRemove.id.startsWith('temp-')) {
+      try {
+        await deleteExperience(itemToRemove.id);
+      } catch (error) {
+        console.error('Failed to delete experience:', error);
+      }
+    }
   };
 
   const isExperienceAlreadyAdded = (bankExperience: ExperienceItem): boolean => {
