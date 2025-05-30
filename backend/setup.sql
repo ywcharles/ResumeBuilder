@@ -40,13 +40,10 @@ CREATE TABLE resume_header (
 CREATE TABLE skill (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  resume_id INTEGER NOT NULL,
   name VARCHAR(20),
-  order_num INTEGER,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (resume_id) REFERENCES resume(id)
+  FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
 CREATE TABLE coursework (
@@ -63,7 +60,6 @@ CREATE TABLE coursework (
 CREATE TABLE education (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  resume_id INTEGER NOT NULL,
   institution VARCHAR(100) NOT NULL,
   degree VARCHAR(100) NOT NULL,
   field VARCHAR(100),
@@ -74,8 +70,7 @@ CREATE TABLE education (
   description TEXT,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES user(id),
-  FOREIGN KEY (resume_id) REFERENCES resume(id)
+  FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
 CREATE TABLE experience (
@@ -154,4 +149,28 @@ CREATE TABLE bullet_tag (
   PRIMARY KEY (tag_id, bullet_id),
   FOREIGN KEY (tag_id) REFERENCES tag(id),
   FOREIGN KEY (bullet_id) REFERENCES bullet_point(id)
+);
+
+CREATE TABLE resume_skill (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  resume_id INTEGER NOT NULL,
+  skill_id INTEGER NOT NULL,
+  order_num INTEGER,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  FOREIGN KEY (resume_id) REFERENCES resume(id),
+  FOREIGN KEY (skill_id) REFERENCES skill(id),
+  UNIQUE(resume_id, skill_id)
+);
+
+CREATE TABLE resume_education (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  resume_id INTEGER NOT NULL,
+  education_id INTEGER NOT NULL,
+  order_num INTEGER,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  FOREIGN KEY (resume_id) REFERENCES resume(id),
+  FOREIGN KEY (education_id) REFERENCES education(id),
+  UNIQUE(resume_id, education_id)
 );
