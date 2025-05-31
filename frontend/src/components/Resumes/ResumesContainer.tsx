@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect} from "react"
 import ResumeCard from "./ResumeCard";
 import AddResumeButton from "./AddResumeButton";
 import useUser from "../../Store/useUserStore";
@@ -11,7 +11,6 @@ const ResumesContainer = () => {
   const navigate = useNavigate();
   const {
       resumes,
-      currentResumeId,
       isLoading,
       error,
       fetchUserResumes,
@@ -20,12 +19,7 @@ const ResumesContainer = () => {
       deleteResume,
       duplicateResume,
       setCurrentResumeId: setManagementCurrentId,
-      clearError
     } = useResumeManagementStore();
-
-  const updateState = ()=>{
-
-  }
 
   useEffect(() => {
     if (user?.id) {
@@ -50,40 +44,36 @@ const ResumesContainer = () => {
     navigate("/resume-builder");
   }
 
-  const handleUpdateResume = () => {
-
+  const handleUpdateResume =  async (id:number, newTitle: string) => {
+    try {
+        await updateResumeTitle(id, newTitle.trim());
+      } catch (error) {
+        console.error('Failed to update title:', error);
+      }
   }
 
-  const handleDeleteResume = () => {
-
+  const handleDeleteResume = async (id:number) => {
+    if (window.confirm('Are you sure you want to delete this resume?')) {
+      try {
+        await deleteResume(id);
+      } catch (error) {
+        console.error('Failed to delete resume:', error);
+      }
+    }
   }
 
-  const handleRetry = () =>{
-
+  const handleDuplicateResume = async (resumeId: number, title: string) => {
+    try {
+      await duplicateResume(resumeId, `${title} (Copy)`);
+    } catch (error) {
+      console.error('Failed to duplicate resume:', error);
+    }
   }
 
   if (isLoading) {
     return (
       <div className="bg-white w-[80%] flex flex-col rounded-md justify-center items-center p-5">
         <div className="text-gray-500">Loading resumes...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white w-[80%] flex flex-col rounded-md justify-center items-center p-5">
-        <div className="text-red-500 text-center mb-4">
-          <p className="font-medium">Error</p>
-          <p className="text-sm">{error}</p>
-        </div>
-        <button
-          onClick={handleRetry}
-          className="px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 transition-colors"
-          disabled={isLoading}
-        >
-          {isLoading ? 'Retrying...' : 'Retry'}
-        </button>
       </div>
     );
   }
@@ -104,6 +94,7 @@ const ResumesContainer = () => {
               onUpdate={handleUpdateResume}
               onDelete={handleDeleteResume}
               openResume={handleOpenResume}
+              onDuplicate={handleDuplicateResume}
               loading={isLoading}
             />
           ))
