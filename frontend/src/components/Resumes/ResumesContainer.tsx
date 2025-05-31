@@ -4,6 +4,7 @@ import AddResumeButton from "./AddResumeButton";
 import useUser from "../../Store/useUserStore";
 import { useResumeManagementStore } from "../../Store/resumeManagementStore";
 import { useNavigate } from "react-router-dom";
+import { ResumeFormData } from "./ResumeFormModal";
 
 const ResumesContainer = () => {
   const [user] = useUser();
@@ -32,8 +33,16 @@ const ResumesContainer = () => {
     }
   }, [user?.id, fetchUserResumes]);
 
-  const handleAddResume = ()=>{
+  const handleAddResume = async (data: ResumeFormData)=>{
+    if (!user?.id || !data.resumeName.trim()) return;
+    
+    try {
+      const newResume = await createResume(user.id, data.resumeName.trim());
+      handleOpenResume(newResume.id);
 
+    } catch (error) {
+      console.error('Failed to create resume:', error);
+    }
   }
 
   const handleOpenResume = (id: number) => {
