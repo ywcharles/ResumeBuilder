@@ -7,7 +7,7 @@ export default function initResumeRoutes(db: Database) {
   router.get("/user/:userId", async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      
+
       const resumes = await db.all(
         `SELECT id, user_id, title, created_at, updated_at 
          FROM resume 
@@ -26,7 +26,7 @@ export default function initResumeRoutes(db: Database) {
   router.get("/:resumeId", async (req: Request, res: Response) => {
     try {
       const { resumeId } = req.params;
-      
+
       const resume = await db.get(
         `SELECT id, user_id, title, created_at, updated_at 
          FROM resume 
@@ -71,7 +71,7 @@ export default function initResumeRoutes(db: Database) {
         user_id: userId,
         title,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
     } catch (error) {
       console.error("Error creating resume:", error);
@@ -108,6 +108,7 @@ export default function initResumeRoutes(db: Database) {
     }
   });
 
+  // FIXED DELETE FUNCTION
   router.delete("/:resumeId", async (req: Request, res: Response) => {
     try {
       const { resumeId } = req.params;
@@ -115,25 +116,29 @@ export default function initResumeRoutes(db: Database) {
       await db.run("BEGIN TRANSACTION");
 
       try {
+        // Delete junction table records (these have resume_id)
         await db.run("DELETE FROM resume_header WHERE resume_id = ?", resumeId);
-        await db.run("DELETE FROM skill WHERE resume_id = ?", resumeId);
         await db.run("DELETE FROM coursework WHERE resume_id = ?", resumeId);
-        await db.run("DELETE FROM education WHERE resume_id = ?", resumeId);
-        
-        await db.run(`
-          DELETE FROM resume_experience_bullet 
-          WHERE resume_experience_id IN (
-            SELECT id FROM resume_experience WHERE resume_id = ?
-          )
-        `, resumeId);
-        
-        await db.run("DELETE FROM resume_experience WHERE resume_id = ?", resumeId);
-        
+        await db.run("DELETE FROM resume_skill WHERE resume_id = ?", resumeId);
+        await db.run("DELETE FROM resume_education WHERE resume_id = ?", resumeId);
         await db.run("DELETE FROM resume_tag WHERE resume_id = ?", resumeId);
+
+        // Delete resume experience bullets
+        await db.run(
+          `DELETE FROM resume_experience_bullet 
+           WHERE resume_experience_id IN (
+             SELECT id FROM resume_experience WHERE resume_id = ?
+           )`,
+          resumeId
+        );
+
+        // Delete resume experiences
+        await db.run("DELETE FROM resume_experience WHERE resume_id = ?", resumeId);
+
+        // Finally delete the resume itself
         await db.run("DELETE FROM resume WHERE id = ?", resumeId);
 
         await db.run("COMMIT");
-
         res.status(204).send();
       } catch (error) {
         await db.run("ROLLBACK");
@@ -145,6 +150,7 @@ export default function initResumeRoutes(db: Database) {
     }
   });
 
+  // FIXED DUPLICATE FUNCTION
   router.post("/:resumeId/duplicate", async (req: Request, res: Response) => {
     try {
       const { resumeId } = req.params;
@@ -163,6 +169,7 @@ export default function initResumeRoutes(db: Database) {
       await db.run("BEGIN TRANSACTION");
 
       try {
+        // Create new resume
         const newResumeResult = await db.run(
           `INSERT INTO resume (user_id, title, created_at, updated_at) 
            VALUES (?, ?, ?, ?)`,
@@ -174,87 +181,143 @@ export default function initResumeRoutes(db: Database) {
 
         const newResumeId = newResumeResult.lastID;
 
-        const header = await db.get("SELECT * FROM resume_header WHERE resume_id = ?", resumeId);
+        // Copy resume header
+        const header = await db.get(
+          "SELECT * FROM resume_header WHERE resume_id = ?",
+          resumeId
+        );
+        
         if (header) {
-          await db.run(`
-            INSERT INTO resume_header (
+          await db.run(
+            `INSERT INTO resume_header (
               resume_id, full_name, email, phone_number, linkedin_url, 
               github_url, website_url, show_phone, show_linkedin, 
               show_github, show_website, show_full_urls, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `, 
-            newResumeId, header.full_name, header.email, header.phone_number,
-            header.linkedin_url, header.github_url, header.website_url,
-            header.show_phone, header.show_linkedin, header.show_github,
-            header.show_website, header.show_full_urls,
-            new Date().toISOString(), new Date().toISOString()
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            newResumeId,
+            header.full_name,
+            header.email,
+            header.phone_number,
+            header.linkedin_url,
+            header.github_url,
+            header.website_url,
+            header.show_phone,
+            header.show_linkedin,
+            header.show_github,
+            header.show_website,
+            header.show_full_urls,
+            new Date().toISOString(),
+            new Date().toISOString()
           );
         }
 
-        const skills = await db.all("SELECT * FROM skill WHERE resume_id = ?", resumeId);
-        for (const skill of skills) {
-          await db.run(`
-            INSERT INTO skill (user_id, resume_id, name, order_num, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-          `, 
-            skill.user_id, newResumeId, skill.name, skill.order_num,
-            new Date().toISOString(), new Date().toISOString()
+        // Copy skills (get skills through junction table)
+        const resumeSkills = await db.all(
+          `SELECT s.*, rs.order_num 
+           FROM skill s
+           JOIN resume_skill rs ON s.id = rs.skill_id
+           WHERE rs.resume_id = ?`,
+          resumeId
+        );
+
+        for (const skill of resumeSkills) {
+          await db.run(
+            `INSERT INTO resume_skill (resume_id, skill_id, order_num, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?)`,
+            newResumeId,
+            skill.id,
+            skill.order_num,
+            new Date().toISOString(),
+            new Date().toISOString()
           );
         }
 
-        const educations = await db.all("SELECT * FROM education WHERE resume_id = ?", resumeId);
-        for (const edu of educations) {
-          await db.run(`
-            INSERT INTO education (
-              user_id, resume_id, institution, degree, field, location,
-              start_date, end_date, gpa, description, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `,
-            edu.user_id, newResumeId, edu.institution, edu.degree, edu.field,
-            edu.location, edu.start_date, edu.end_date, edu.gpa, edu.description,
-            new Date().toISOString(), new Date().toISOString()
+        // Copy education (get education through junction table)
+        const resumeEducations = await db.all(
+          `SELECT e.*, re.order_num 
+           FROM education e
+           JOIN resume_education re ON e.id = re.education_id
+           WHERE re.resume_id = ?`,
+          resumeId
+        );
+
+        for (const edu of resumeEducations) {
+          await db.run(
+            `INSERT INTO resume_education (resume_id, education_id, order_num, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?)`,
+            newResumeId,
+            edu.id,
+            edu.order_num,
+            new Date().toISOString(),
+            new Date().toISOString()
           );
         }
 
-        const experiences = await db.all(`
-          SELECT e.*, re.order_num as resume_order
-          FROM experience e
-          JOIN resume_experience re ON e.id = re.experience_id
-          WHERE re.resume_id = ?
-        `, resumeId);
-        
+        // Copy coursework
+        const coursework = await db.all(
+          "SELECT * FROM coursework WHERE resume_id = ?",
+          resumeId
+        );
+
+        for (const course of coursework) {
+          await db.run(
+            `INSERT INTO coursework (resume_id, user_id, name, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?)`,
+            newResumeId,
+            course.user_id,
+            course.name,
+            new Date().toISOString(),
+            new Date().toISOString()
+          );
+        }
+
+        // Copy experiences and bullets (this part was mostly correct)
+        const experiences = await db.all(
+          `SELECT e.*, re.order_num as resume_order
+           FROM experience e
+           JOIN resume_experience re ON e.id = re.experience_id
+           WHERE re.resume_id = ?`,
+          resumeId
+        );
+
         for (const exp of experiences) {
-          const newResumeExpResult = await db.run(`
-            INSERT INTO resume_experience (
+          const newResumeExpResult = await db.run(
+            `INSERT INTO resume_experience (
               resume_id, experience_id, order_num, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?)
-          `,
-            newResumeId, exp.id, exp.resume_order,
-            new Date().toISOString(), new Date().toISOString()
+            ) VALUES (?, ?, ?, ?, ?)`,
+            newResumeId,
+            exp.id,
+            exp.resume_order,
+            new Date().toISOString(),
+            new Date().toISOString()
           );
 
           const newResumeExpId = newResumeExpResult.lastID;
 
-          const selectedBullets = await db.all(`
-            SELECT bp.*, reb.is_selected, reb.order_num as resume_order
-            FROM bullet_point bp
-            JOIN resume_experience_bullet reb ON bp.id = reb.bullet_point_id
-            JOIN resume_experience re ON reb.resume_experience_id = re.id
-            WHERE re.resume_id = ? AND re.experience_id = ?
-          `, resumeId, exp.id);
+          const selectedBullets = await db.all(
+            `SELECT bp.*, reb.is_selected, reb.order_num as resume_order
+             FROM bullet_point bp
+             JOIN resume_experience_bullet reb ON bp.id = reb.bullet_point_id
+             JOIN resume_experience re ON reb.resume_experience_id = re.id
+             WHERE re.resume_id = ? AND re.experience_id = ?`,
+            resumeId,
+            exp.id
+          );
 
           for (const bullet of selectedBullets) {
-            await db.run(`
-              INSERT INTO resume_experience_bullet (
+            await db.run(
+              `INSERT INTO resume_experience_bullet (
                 resume_experience_id, bullet_point_id, is_selected, order_num, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?)
-            `,
-              newResumeExpId, bullet.id, bullet.is_selected, bullet.resume_order,
-              new Date().toISOString(), new Date().toISOString()
+              ) VALUES (?, ?, ?, ?, ?, ?)`,
+              newResumeExpId,
+              bullet.id,
+              bullet.is_selected,
+              bullet.resume_order,
+              new Date().toISOString(),
+              new Date().toISOString()
             );
           }
         }
-
         await db.run("COMMIT");
 
         res.status(201).json({
@@ -262,7 +325,7 @@ export default function initResumeRoutes(db: Database) {
           user_id: originalResume.user_id,
           title: title || `${originalResume.title} (Copy)`,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         });
       } catch (error) {
         await db.run("ROLLBACK");
@@ -275,4 +338,4 @@ export default function initResumeRoutes(db: Database) {
   });
 
   return router;
-} 
+}
