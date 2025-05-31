@@ -60,6 +60,16 @@ const ExperiencesContainer = () => {
     });
   };
 
+  // Helper function to convert date to YYYY-MM-DD format for form inputs
+  const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleAddExperience = async (data: ExperienceFormData) => {
     try {
       await api.post(`/api/experiences`, {
@@ -139,33 +149,32 @@ const ExperiencesContainer = () => {
     );
   }
 
-  if (experiences.length === 0) {
-    return (
-      <div className="bg-white w-[80%] flex flex-col rounded-md justify-center items-center p-5">
-        <div className="text-gray-500">No experiences found</div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full flex flex-col items-center space-y-4">
       <AddExperienceButton onAdd={handleAddExperience} />
 
-      <div className="bg-white w-[80%] flex flex-col rounded-md justify-start items-center p-5 space-y-2">
-        {experiences.map((experience) => (
-          <ExperienceCard
-            key={experience.id}
-            experience_id={parseInt(experience.id)}
-            companyName={experience.company}
-            position={experience.position}
-            location={experience.location}
-            startDate={formatDate(experience.startDate)}
-            endDate={formatDate(experience.endDate)}
-            bullets={experience.bullets}
-            onUpdate={handleUpdateExperience}
-            onDelete={handleDeleteExperience}
-          />
-        ))}
+      <div className="bg-white w-[80%] flex flex-col rounded-md justify-start items-center p-5 space-y-2 min-h-screen">
+        {experiences.length > 0 ? (
+          experiences.map((experience) => (
+            <ExperienceCard
+              key={experience.id}
+              experience_id={parseInt(experience.id)}
+              companyName={experience.company}
+              position={experience.position}
+              location={experience.location}
+              startDate={formatDate(experience.startDate)}
+              endDate={formatDate(experience.endDate)}
+              bullets={experience.bullets}
+              onUpdate={handleUpdateExperience}
+              onDelete={handleDeleteExperience}
+              // Pass raw dates for form editing
+              rawStartDate={formatDateForInput(experience.startDate)}
+              rawEndDate={formatDateForInput(experience.endDate)}
+            />
+          ))
+        ) : (
+          <p>The resume bank is empty.</p>
+        )}
       </div>
     </div>
   );

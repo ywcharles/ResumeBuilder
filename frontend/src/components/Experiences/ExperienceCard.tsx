@@ -12,6 +12,9 @@ type Props = {
   bullets?: string[];
   onUpdate?: (id: number, data: ExperienceFormData) => void;
   onDelete?: (id: number) => void;
+  // Add these props to pass the raw dates
+  rawStartDate?: string;
+  rawEndDate?: string;
 };
 
 const ExperienceCard = (props: Props) => {
@@ -21,12 +24,29 @@ const ExperienceCard = (props: Props) => {
 
   const toggleExpand = () => setExpanded(!expanded);
 
+  // Helper function to convert formatted date back to YYYY-MM-DD format
+  const convertToDateInputFormat = (formattedDate: string): string => {
+    if (!formattedDate || formattedDate === "Present") return "";
+    
+    try {
+      // Parse the formatted date (e.g., "January 2024")
+      const date = new Date(formattedDate + " 1"); // Add day for parsing
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      return `${year}-${month}-01`; // Default to first day of month
+    } catch (error) {
+      console.warn("Could not parse date:", formattedDate);
+      return "";
+    }
+  };
+
   const [formData, setFormData] = useState<ExperienceFormData>({
     companyName: props.companyName,
     position: props.position,
     location: props.location,
-    startDate: props.startDate,
-    endDate: props.endDate,
+    // Use raw dates if available, otherwise convert formatted dates
+    startDate: props.rawStartDate || convertToDateInputFormat(props.startDate),
+    endDate: props.rawEndDate || convertToDateInputFormat(props.endDate),
     bullets: (props.bullets || []).map(bullet => ({ content: bullet })),
   });
 
