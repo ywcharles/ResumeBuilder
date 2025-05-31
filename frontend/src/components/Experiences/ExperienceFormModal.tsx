@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FormEvent } from 'react';
 import { Trash2 } from 'lucide-react';
+import { ExperienceItem } from '../../types';
 
 export interface ExperienceFormData {
   companyName: string;
@@ -7,6 +8,7 @@ export interface ExperienceFormData {
   location: string;
   startDate: string;
   endDate: string;
+  current: boolean;
   bullets: Array<{ content: string }>;
 }
 
@@ -18,6 +20,30 @@ interface ExperienceFormModalProps {
   setFormData: React.Dispatch<React.SetStateAction<ExperienceFormData>>;
 }
 
+// Helper functions for data transformation
+export const transformExperienceItemToFormData = (item: ExperienceItem): ExperienceFormData => ({
+  companyName: item.company,
+  position: item.position,
+  location: item.location,
+  startDate: item.startDate,
+  endDate: item.endDate,
+  current: item.current,
+  bullets: item.bullets.map(bullet => ({ content: bullet }))
+});
+
+export const transformFormDataToExperienceItem = (formData: ExperienceFormData, id?: string): ExperienceItem => ({
+  id: id || '',
+  company: formData.companyName,
+  position: formData.position,
+  location: formData.location,
+  startDate: formData.startDate,
+  endDate: formData.current ? '' : formData.endDate,
+  current: formData.current,
+  bullets: formData.bullets
+    .map(bullet => bullet.content.trim())
+    .filter(content => content.length > 0)
+});
+
 const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
   isOpen,
   onClose,
@@ -28,8 +54,18 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
   if (!isOpen) return null;
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: checked,
+        // Clear end date if marking as current
+        ...(name === 'current' && checked ? { endDate: '' } : {})
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleBulletPointChange = (index: number, value: string) => {
@@ -43,9 +79,11 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
   };
 
   const removeBulletPoint = (index: number) => {
-    const updatedBullets = [...formData.bullets];
-    updatedBullets.splice(index, 1);
-    setFormData(prev => ({ ...prev, bullets: updatedBullets }));
+    if (formData.bullets.length > 1) {
+      const updatedBullets = [...formData.bullets];
+      updatedBullets.splice(index, 1);
+      setFormData(prev => ({ ...prev, bullets: updatedBullets }));
+    }
   };
 
   const handleFormSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -56,7 +94,7 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50">
-      <div className="bg-white w-[90%] max-w-xl rounded-lg p-6 shadow-lg">
+      <div className="bg-white w-[90%] max-w-xl rounded-lg p-6 shadow-lg max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Experience Form</h2>
         <form onSubmit={handleFormSubmit}>
           <input
@@ -65,7 +103,7 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
             placeholder="Company Name"
             value={formData.companyName}
             onChange={handleInputChange}
-            className="w-full mb-3 p-2 border rounded"
+            className="w-full mb-3 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
             required
           />
           <input
@@ -74,7 +112,7 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
             placeholder="Position/Job Title"
             value={formData.position}
             onChange={handleInputChange}
-            className="w-full mb-3 p-2 border rounded"
+            className="w-full mb-3 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
             required
           />
           <input
@@ -83,27 +121,47 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
             placeholder="Location"
             value={formData.location}
             onChange={handleInputChange}
-            className="w-full mb-3 p-2 border rounded"
+            className="w-full mb-3 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
 
-          <label className="block font-medium mb-1">Start Date</label>
-          <input
-            type="date"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleInputChange}
-            className="w-full mb-3 p-2 border rounded"
-            required
-          />
+          <div className="mb-3">
+            <label className="block font-medium mb-1">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleInputChange}
+              className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
+              required
+            />
+          </div>
 
-          <label className="block font-medium mb-1">End Date</label>
-          <input
-            type="date"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleInputChange}
-            className="w-full mb-3 p-2 border rounded"
-          />
+          <div className="mb-3">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="current"
+                checked={formData.current}
+                onChange={handleInputChange}
+                className="rounded"
+              />
+              <span className="font-medium">I currently work here</span>
+            </label>
+          </div>
+
+          {!formData.current && (
+            <div className="mb-3">
+              <label className="block font-medium mb-1">End Date</label>
+              <input
+                type="date"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
+                required={!formData.current}
+              />
+            </div>
+          )}
 
           <div className="mb-4">
             <label className="block font-medium mb-2">Bullet Points</label>
@@ -113,22 +171,25 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
                   type="text"
                   value={bullet.content}
                   onChange={(e) => handleBulletPointChange(i, e.target.value)}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
                   placeholder={`Bullet Point ${i + 1}`}
                 />
-                <button
-                  type="button"
-                  onClick={() => removeBulletPoint(i)}
-                  className="text-gray-600 hover:text-gray-800"
-                >
-                  <Trash2/>
-                </button>
+                {formData.bullets.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeBulletPoint(i)}
+                    className="text-gray-600 hover:text-red-600 transition-colors"
+                    title="Remove bullet point"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
               </div>
             ))}
             <button
               type="button"
               onClick={addBulletPoint}
-              className="text-sky-600 text-sm mt-1"
+              className="text-sky-600 text-sm mt-1 hover:text-sky-700 transition-colors"
             >
               + Add Bullet Point
             </button>
@@ -138,13 +199,13 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-500 hover:bg-red-400 hover:text-white rounded px-4 py-2"
+              className="text-gray-500 hover:bg-red-400 hover:text-white rounded px-4 py-2 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+              className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition-colors"
             >
               Submit
             </button>

@@ -1,97 +1,96 @@
 import { useState } from "react";
 import { Pencil, Trash2, Eye, EyeOff } from "lucide-react";
-import ExperienceFormModal, { ExperienceFormData } from "./ExperienceFormModal";
+import ExperienceFormModal, { 
+  ExperienceFormData,
+  transformExperienceItemToFormData 
+} from "./ExperienceFormModal";
+import { ExperienceItem } from "../../types";
 
-type Props = {
-  experience_id: number;
-  companyName: string;
-  position: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  bullets?: string[];
-  onUpdate?: (id: number, data: ExperienceFormData) => void;
-  onDelete?: (id: number) => void;
-  // Add these props to pass the raw dates
-  rawStartDate?: string;
-  rawEndDate?: string;
+interface ExperienceCardProps {
+  experience: ExperienceItem;
+  onUpdate?: (id: string, data: ExperienceFormData) => void;
+  onDelete?: (id: string) => void;
+  loading?: boolean;
+}
+
+// Helper function to format dates for display
+const formatDisplayDate = (dateString: string): string => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+  } catch (error) {
+    console.warn("Could not parse date:", dateString);
+    return dateString;
+  }
 };
 
-const ExperienceCard = (props: Props) => {
+const ExperienceCard: React.FC<ExperienceCardProps> = ({ 
+  experience, 
+  onUpdate, 
+  onDelete, 
+  loading = false 
+}) => {
   const [expanded, setExpanded] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [formData, setFormData] = useState<ExperienceFormData>(
+    transformExperienceItemToFormData(experience)
+  );
 
   const toggleExpand = () => setExpanded(!expanded);
 
-  // Helper function to convert formatted date back to YYYY-MM-DD format
-  const convertToDateInputFormat = (formattedDate: string): string => {
-    if (!formattedDate || formattedDate === "Present") return "";
-    
-    try {
-      // Parse the formatted date (e.g., "January 2024")
-      const date = new Date(formattedDate + " 1"); // Add day for parsing
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      return `${year}-${month}-01`; // Default to first day of month
-    } catch (error) {
-      console.warn("Could not parse date:", formattedDate);
-      return "";
+  const handleEditSubmit = async (data: ExperienceFormData) => {
+    if (onUpdate) {
+      await onUpdate(experience.id, data);
     }
-  };
-
-  const [formData, setFormData] = useState<ExperienceFormData>({
-    companyName: props.companyName,
-    position: props.position,
-    location: props.location,
-    // Use raw dates if available, otherwise convert formatted dates
-    startDate: props.rawStartDate || convertToDateInputFormat(props.startDate),
-    endDate: props.rawEndDate || convertToDateInputFormat(props.endDate),
-    bullets: (props.bullets || []).map(bullet => ({ content: bullet })),
-  });
-
-  const handleEditSubmit = (data: ExperienceFormData) => {
-    if (props.onUpdate) {
-      props.onUpdate(props.experience_id, data);
-    }
-    console.log("Edit experience:", data);
     setIsEditOpen(false);
   };
 
-  const handleDelete = () => {
-    if (props.onDelete) {
-      props.onDelete(props.experience_id);
+  const handleDelete = async () => {
+    if (onDelete) {
+      await onDelete(experience.id);
     }
-    console.log("Delete experience with ID:", props.experience_id);
     setIsDeleteConfirmOpen(false);
   };
 
+  const handleEditOpen = () => {
+    // Refresh form data when opening edit modal
+    setFormData(transformExperienceItemToFormData(experience));
+    setIsEditOpen(true);
+  };
+
+  const displayStartDate = formatDisplayDate(experience.startDate);
+  const displayEndDate = experience.current ? "Present" : formatDisplayDate(experience.endDate);
+
   return (
-    <div
-      className="relative bg-gray-50 w-full p-4 rounded shadow hover:bg-gray-100 transition"
-      onClick={toggleExpand}
-    >
+    <div className="relative bg-gray-50 w-full p-4 rounded shadow hover:bg-gray-100 transition-colors">
       {/* Action Buttons */}
       <div
         className="absolute top-2 right-2 flex gap-3"
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="text-gray-600 hover:text-gray-800"
+          className="text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
           title="Edit"
-          onClick={() => setIsEditOpen(true)}
+          onClick={handleEditOpen}
+          disabled={loading}
         >
           <Pencil size={18} />
         </button>
         <button
-          className="text-gray-600 hover:text-gray-800"
+          className="text-gray-600 hover:text-red-600 transition-colors disabled:opacity-50"
           title="Delete"
           onClick={() => setIsDeleteConfirmOpen(true)}
+          disabled={loading}
         >
           <Trash2 size={18} />
         </button>
         <button
-          className="text-gray-600 hover:text-gray-800"
+          className="text-gray-600 hover:text-gray-800 transition-colors"
           title={expanded ? "Hide details" : "Show details"}
           onClick={toggleExpand}
         >
@@ -100,26 +99,30 @@ const ExperienceCard = (props: Props) => {
       </div>
 
       {/* Experience Info */}
-      <h3 className="text-lg font-semibold">{props.companyName}</h3>
-      <p className="text-md font-medium text-gray-700">{props.position}</p>
-      {props.location && <p className="text-sm text-gray-600">{props.location}</p>}
-      {props.startDate && (
-        <p className="text-sm text-gray-500">
-          {props.startDate} – {props.endDate || "Present"}
-        </p>
-      )}
+      <div onClick={toggleExpand} className="cursor-pointer pr-20">
+        <h3 className="text-lg font-semibold">{experience.company}</h3>
+        <p className="text-md font-medium text-gray-700">{experience.position}</p>
+        {experience.location && (
+          <p className="text-sm text-gray-600">{experience.location}</p>
+        )}
+        {displayStartDate && (
+          <p className="text-sm text-gray-500">
+            {displayStartDate} – {displayEndDate}
+          </p>
+        )}
+      </div>
 
       {/* Expanded Content */}
       {expanded && (
-        <div className="mt-2">
-          {props.bullets?.length ? (
-            <ul className="list-disc pl-5 mt-2 text-sm space-y-1">
-              {props.bullets.map((bullet, index) => (
-                <li key={index}>{bullet}</li>
+        <div className="mt-4 border-t pt-3">
+          {experience.bullets.length > 0 ? (
+            <ul className="list-disc pl-5 text-sm space-y-1">
+              {experience.bullets.map((bullet, index) => (
+                <li key={index} className="text-gray-700">{bullet}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-gray-400 mt-2">No bullet points added.</p>
+            <p className="text-sm text-gray-400">No bullet points added.</p>
           )}
         </div>
       )}
@@ -139,20 +142,22 @@ const ExperienceCard = (props: Props) => {
           <div className="bg-white w-[90%] max-w-md rounded-lg p-6 shadow-lg text-center">
             <h2 className="text-lg font-semibold mb-4">Delete Experience</h2>
             <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete {props.companyName} experience?
+              Are you sure you want to delete the experience at <strong>{experience.company}</strong>?
             </p>
             <div className="flex justify-center gap-4">
               <button
-                className="px-4 py-2 rounded text-gray-600 border border-gray-300 hover:bg-gray-100"
+                className="px-4 py-2 rounded text-gray-600 border border-gray-300 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsDeleteConfirmOpen(false)}
+                disabled={loading}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
+                className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
                 onClick={handleDelete}
+                disabled={loading}
               >
-                Delete
+                {loading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
