@@ -11,7 +11,7 @@ function ResumeBuilder() {
   return (
     <div className="flex flex-col h-screen">
       {/* Resume Selector */}
-      {/* <ResumeSelector /> */}
+      <ResumeSelector />
       
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Mobile Tabs */}
