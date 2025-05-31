@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import ResumeBuilder from './pages/ResumeBuilder';
 import Experiences from './pages/Experiences';
+import Resumes from './pages/Resumes'
 
 function App() {
   const [user] = useUser();
@@ -20,6 +21,8 @@ function App() {
           <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/auth" />} />
           <Route path="/resume-builder" element={user ? <ResumeBuilder /> : <Navigate to="/auth" />} />
           <Route path="/experiences" element={user ? <Experiences/> : <Navigate to="/auth" />} />
+          <Route path="/resumes" element={user ? <Resumes/> : <Navigate to="/auth" />} />
+
         </Routes>
       </div>
     </Router>
