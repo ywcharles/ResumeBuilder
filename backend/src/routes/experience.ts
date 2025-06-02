@@ -11,6 +11,7 @@ interface BulletPoint {
   order_num: number;
   created_at: string;
   updated_at: string;
+  tags?: { id: number; name: string }[];
 }
 
 interface ExperienceWithBullets {
@@ -35,7 +36,7 @@ interface FrontendExperience {
   startDate: string;
   endDate: string;
   current: boolean;
-  bullets: string[];
+  bullets: { content: string; tags: { id: number; name: string }[] }[];
 }
 
 interface FrontendExperienceSection {
@@ -53,8 +54,36 @@ function transformToFrontendFormat(dbExperience: ExperienceWithBullets): Fronten
     current: !dbExperience.end_date,
     bullets: dbExperience.bullets
       .filter(bullet => bullet.content && bullet.content.trim())
-      .map(bullet => bullet.content)
+      .map(bullet => ({
+        content: bullet.content,
+        tags: bullet.tags || []
+      }))
   };
+}
+
+async function fetchBulletTags(db: Database, bulletIds: number[]): Promise<Map<number, { id: number; name: string }[]>> {
+  if (bulletIds.length === 0) return new Map();
+  
+  const placeholders = bulletIds.map(() => '?').join(',');
+  const bulletTags = await db.all(
+    `SELECT bt.bullet_id, t.id, t.name 
+     FROM bullet_tag bt
+     JOIN tag t ON bt.tag_id = t.id
+     WHERE bt.bullet_id IN (${placeholders})
+     ORDER BY t.name`,
+    ...bulletIds
+  );
+  
+  const tagsMap = new Map<number, { id: number; name: string }[]>();
+  
+  bulletTags.forEach(({ bullet_id, id, name }) => {
+    if (!tagsMap.has(bullet_id)) {
+      tagsMap.set(bullet_id, []);
+    }
+    tagsMap.get(bullet_id)!.push({ id, name });
+  });
+  
+  return tagsMap;
 }
 
 export default function initExperienceRoutes(db: Database) {
@@ -86,12 +115,17 @@ export default function initExperienceRoutes(db: Database) {
           experience.id
         );
         
+        // Fetch tags for all bullets in this experience
+        const bulletIds = bullets.map(b => b.id);
+        const tagsMap = await fetchBulletTags(db, bulletIds);
+        
         experiencesWithBullets.push({
           ...experience,
           current: !experience.end_date,
           bullets: bullets.map(bullet => ({
             ...bullet,
-            is_selected: true // Default for bank items
+            is_selected: true, // Default for bank items
+            tags: tagsMap.get(bullet.id) || []
           }))
         });
       }
@@ -142,12 +176,17 @@ export default function initExperienceRoutes(db: Database) {
           experience.id, resumeId
         );
         
+        // Fetch tags for all bullets in this experience
+        const bulletIds = bullets.map(b => b.id);
+        const tagsMap = await fetchBulletTags(db, bulletIds);
+        
         experiencesWithBullets.push({
           ...experience,
           current: !experience.end_date,
           bullets: bullets.map(bullet => ({
             ...bullet,
-            is_selected: bullet.is_selected !== null ? bullet.is_selected : true
+            is_selected: bullet.is_selected !== null ? bullet.is_selected : true,
+            tags: tagsMap.get(bullet.id) || []
           }))
         });
       }
