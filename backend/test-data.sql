@@ -111,28 +111,6 @@ VALUES
 INSERT INTO tag (name)
 VALUES ('Backend'), ('Frontend'), ('Full Stack'), ('Automation'), ('Microservices');
 
-INSERT INTO resume_tag (tag_id, resume_id)
-VALUES (1, 1), (2, 1), (3, 1);
-
-INSERT INTO experience_tag (tag_id, experience_id)
-VALUES (1, 1), (3, 1), (2, 2), (1, 2), (4, 3);
-
-INSERT INTO bullet_tag (tag_id, bullet_id)
-VALUES
--- SIG
-(1, 1), 
-(2, 2), 
-(3, 3), 
-(5, 4),  
--- Stratagem
-(3, 5),
-(2, 6),
-(1, 7),
--- Berkley
-(4, 8),
-(4, 9),
-(4, 10);
-
 ---------------------------------
 
 -- CHARLES
@@ -429,63 +407,6 @@ VALUES
 ('Machine Learning'),
 ('Mobile Development');
 
--- Tag associations for Charles's resumes
-INSERT INTO resume_tag (tag_id, resume_id)
-VALUES 
-(2, 2), -- Frontend tag for Frontend Resume
-(6, 3), -- Data tag for Data Resume
-(7, 3); -- Data Science tag for Data Resume
-
--- Tag associations for Charles's experiences
-INSERT INTO experience_tag (tag_id, experience_id)
-VALUES
--- URBN
-(6, 4), (7, 4),
--- UPenn
-(6, 5), (7, 5),
--- AskVanguard
-(2, 6), (1, 6),
--- Quackademics
-(2, 7),
--- Pic-A-Recipe
-(10, 8),
--- Vanguard AI Assistant
-(8, 9), (1, 9),
--- Skills.FYI
-(7, 10), (8, 10),
--- Expense Tracker
-(6, 11), (1, 11),
--- WebCam RPS
-(8, 12), (9, 12),
--- Paper Scanner
-(8, 13), (9, 13);
-
--- Tag associations for Charles's bullet points
-INSERT INTO bullet_tag (tag_id, bullet_id)
-VALUES
--- URBN bullets
-(6, 14), (7, 15), (6, 16), (6, 17),
--- UPenn bullets
-(6, 18), (6, 19), (6, 20),
--- AskVanguard bullets
-(2, 22), (1, 23), (1, 24), (2, 25),
--- Quackademics bullets
-(2, 26), (2, 27), (2, 28),
--- Pic-A-Recipe bullets (Frontend)
-(10, 29), (10, 30), (10, 31),
--- Vanguard AI Assistant bullets
-(8, 32), (8, 33), (1, 34),
--- Pic-A-Recipe bullets (Data)
-(10, 35), (10, 36), (10, 37),
--- Skills.FYI bullets
-(7, 38), (8, 39), (8, 40),
--- Expense Tracker bullets
-(6, 41), (6, 42), (6, 43),
--- WebCam RPS bullets
-(8, 44), (9, 45),
--- Paper Scanner bullets
-(8, 46), (9, 47);
-
 ------------------------------
 -- ALAN
 
@@ -652,35 +573,3 @@ VALUES
 INSERT INTO tag (name)
 VALUES 
 ('Real-time Systems');
-
--- Link tags to Alan's resume (resume_id is 4)
-INSERT INTO resume_tag (tag_id, resume_id)
-VALUES (2, 4), (3, 4), (5, 4), (6, 4), (7, 4);
-
--- Link tags to Alan's experiences
-INSERT INTO experience_tag (tag_id, experience_id)
-VALUES 
--- Raptor Defense (experience_id 14)
-(4, 14), (9, 14), (10, 14), (11, 14),
--- Holman (experience_id 15)
-(2, 15), (3, 15), (5, 15), (6, 15),
--- RAG AI Chatbot (experience_id 16)
-(2, 16), (7, 16), (8, 16),
--- Wiki Game (experience_id 17)
-(3, 17), (5, 17), (6, 17), (11, 17),
--- CitySquats (experience_id 18)
-(2, 18), (6, 18), (8, 18);
-
--- Link tags to Alan's bullet points
-INSERT INTO bullet_tag (tag_id, bullet_id)
-VALUES
--- Raptor Defense bullets
-(10, 48), (4, 49), (10, 50), (4, 51),
--- Holman bullets
-(2, 52), (5, 53), (2, 54), (2, 55),
--- RAG AI Chatbot bullets
-(2, 56), (7, 57), (8, 58),
--- Wiki Game bullets
-(3, 59), (3, 60), (11, 61),
--- CitySquats bullets
-(2, 62), (8, 63), (2, 64);
