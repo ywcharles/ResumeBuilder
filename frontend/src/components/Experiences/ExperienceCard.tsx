@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import ExperienceFormModal, { 
   ExperienceFormData,
   transformExperienceItemToFormData 
 } from "./ExperienceFormModal";
 import { ExperienceItem } from "../../types";
+import { formatDate } from "../../utils/utils";
 
 interface ExperienceCardProps {
   experience: ExperienceItem;
@@ -12,21 +13,6 @@ interface ExperienceCardProps {
   onDelete?: (id: string) => void;
   loading?: boolean;
 }
-
-// Helper function to format dates for display
-const formatDisplayDate = (dateString: string): string => {
-  if (!dateString) return "";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-    });
-  } catch (error) {
-    console.warn("Could not parse date:", dateString);
-    return dateString;
-  }
-};
 
 const ExperienceCard: React.FC<ExperienceCardProps> = ({ 
   experience, 
@@ -37,9 +23,32 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   const [expanded, setExpanded] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [formData, setFormData] = useState<ExperienceFormData>(
-    transformExperienceItemToFormData(experience)
-  );
+  
+  // Deep clone the experience object for initial form data to prevent reference sharing
+  const getInitialFormData = () => {
+    const clonedExperience: ExperienceItem = {
+      ...experience,
+      bullets: experience.bullets.map(bullet => ({
+        ...bullet,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
+    };
+    return transformExperienceItemToFormData(clonedExperience);
+  };
+  
+  const [formData, setFormData] = useState<ExperienceFormData>(() => getInitialFormData());
+
+  // Update form data when experience prop changes
+  useEffect(() => {
+    const clonedExperience: ExperienceItem = {
+      ...experience,
+      bullets: experience.bullets.map(bullet => ({
+        ...bullet,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
+    };
+    setFormData(transformExperienceItemToFormData(clonedExperience));
+  }, [experience]);
 
   const toggleExpand = () => setExpanded(!expanded);
 
@@ -58,13 +67,22 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   };
 
   const handleEditOpen = () => {
-    // Refresh form data when opening edit modal
-    setFormData(transformExperienceItemToFormData(experience));
+    // Deep clone the experience object to ensure no reference sharing
+    const clonedExperience: ExperienceItem = {
+      ...experience,
+      bullets: experience.bullets.map(bullet => ({
+        ...bullet,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
+    };
+    
+    // Transform the deeply cloned experience to form data
+    setFormData(transformExperienceItemToFormData(clonedExperience));
     setIsEditOpen(true);
   };
 
-  const displayStartDate = formatDisplayDate(experience.startDate);
-  const displayEndDate = experience.current ? "Present" : formatDisplayDate(experience.endDate);
+  const displayStartDate = formatDate(experience.startDate);
+  const displayEndDate = experience.current ? "Present" : formatDate(experience.endDate);
 
   return (
     <div className="relative bg-gray-50 w-full p-4 rounded shadow hover:bg-gray-100 transition-colors">
@@ -116,9 +134,25 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
       {expanded && (
         <div className="mt-4 border-t pt-3">
           {experience.bullets.length > 0 ? (
-            <ul className="list-disc pl-5 text-sm space-y-1">
+            <ul className="list-disc pl-5 text-sm space-y-3">
               {experience.bullets.map((bullet, index) => (
-                <li key={index} className="text-gray-700">{bullet}</li>
+                <li key={index} className="text-gray-700">
+                  <div className="space-y-2">
+                    <span>{bullet.content}</span>
+                    {bullet.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {bullet.tags.map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </li>
               ))}
             </ul>
           ) : (

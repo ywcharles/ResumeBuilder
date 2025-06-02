@@ -13,10 +13,8 @@ interface DatabaseExperienceItem {
   created_at: string;
   updated_at: string;
   bullets: {
-    id: number;
     content: string;
-    is_selected: boolean;
-    order_num: number;
+    tags: { id: number; name: string }[];
   }[];
 }
 
@@ -33,7 +31,10 @@ function transformFromDatabase(dbExperience: DatabaseExperienceItem): Experience
     current: !dbExperience.end_date,
     bullets: dbExperience.bullets
       .filter(bullet => bullet.content && bullet.content.trim())
-      .map(bullet => bullet.content)
+      .map(bullet => ({
+        content: bullet.content,
+        tags: bullet.tags ? bullet.tags.map(tag => ({ ...tag })) : []
+      }))
   };
 }
 
@@ -47,8 +48,12 @@ function transformToDatabase(frontendExperience: ExperienceItem, userId: number,
     startDate: frontendExperience.startDate,
     endDate: frontendExperience.current ? null : frontendExperience.endDate,
     bullets: frontendExperience.bullets
-      .filter(bullet => bullet && bullet.trim())
-      .map(content => ({ content, is_selected: true }))
+      .filter(bullet => bullet.content && bullet.content.trim())
+      .map(bullet => ({ 
+        content: bullet.content, 
+        is_selected: true,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
   };
 }
 
@@ -113,8 +118,12 @@ export const experienceApi = {
         startDate: experienceData.startDate,
         endDate: experienceData.current ? null : experienceData.endDate,
         bullets: experienceData.bullets
-          .filter(bullet => bullet && bullet.trim())
-          .map(content => ({ content, is_selected: true }))
+          .filter(bullet => bullet.content && bullet.content.trim())
+          .map(bullet => ({ 
+            content: bullet.content, 
+            is_selected: true,
+            tags: bullet.tags.map(tag => ({ ...tag }))
+          }))
       };
       
       const response = await api.put(`/api/experiences/${experienceId}`, updateData);

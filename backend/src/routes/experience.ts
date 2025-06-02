@@ -11,6 +11,7 @@ interface BulletPoint {
   order_num: number;
   created_at: string;
   updated_at: string;
+  tags?: { id: number; name: string }[];
 }
 
 interface ExperienceWithBullets {
@@ -35,14 +36,15 @@ interface FrontendExperience {
   startDate: string;
   endDate: string;
   current: boolean;
-  bullets: string[];
+  bullets: { content: string; tags: { id: number; name: string }[] }[];
+  fromBank?: boolean;
 }
 
 interface FrontendExperienceSection {
   items: FrontendExperience[];
 }
 
-function transformToFrontendFormat(dbExperience: ExperienceWithBullets): FrontendExperience {
+function transformToFrontendFormat(dbExperience: ExperienceWithBullets, fromBank: boolean = false): FrontendExperience {
   return {
     id: dbExperience.id.toString(),
     company: dbExperience.company_name,
@@ -50,11 +52,39 @@ function transformToFrontendFormat(dbExperience: ExperienceWithBullets): Fronten
     location: dbExperience.location,
     startDate: dbExperience.start_date,
     endDate: dbExperience.end_date || '',
-    current: !dbExperience.end_date,
-    bullets: dbExperience.bullets
-      .filter(bullet => bullet.content && bullet.content.trim())
-      .map(bullet => bullet.content)
+    current: dbExperience.current,
+    bullets: dbExperience.bullets.map(bullet => ({
+      content: bullet.content,
+      tags: bullet.tags || []
+    })),
+    fromBank
   };
+}
+
+async function fetchBulletTags(db: Database, bulletIds: number[]): Promise<Map<number, { id: number; name: string }[]>> {
+  if (bulletIds.length === 0) return new Map();
+  
+  const placeholders = bulletIds.map(() => '?').join(',');
+  const bulletTags = await db.all(
+    `SELECT bt.bullet_id, t.id, t.name 
+     FROM bullet_tag bt
+     JOIN tag t ON bt.tag_id = t.id
+     WHERE bt.bullet_id IN (${placeholders})
+     ORDER BY t.name`,
+    ...bulletIds
+  );
+  
+  const tagsMap = new Map<number, { id: number; name: string }[]>();
+  
+  bulletTags.forEach(({ bullet_id, id, name }) => {
+    if (!tagsMap.has(bullet_id)) {
+      tagsMap.set(bullet_id, []);
+    }
+    // Create independent tag objects to prevent reference sharing
+    tagsMap.get(bullet_id)!.push({ id: id, name: name });
+  });
+  
+  return tagsMap;
 }
 
 export default function initExperienceRoutes(db: Database) {
@@ -86,17 +116,22 @@ export default function initExperienceRoutes(db: Database) {
           experience.id
         );
         
+        // Fetch tags for all bullets in this experience
+        const bulletIds = bullets.map(b => b.id);
+        const tagsMap = await fetchBulletTags(db, bulletIds);
+        
         experiencesWithBullets.push({
           ...experience,
           current: !experience.end_date,
           bullets: bullets.map(bullet => ({
             ...bullet,
-            is_selected: true // Default for bank items
+            is_selected: true, // Default for bank items
+            tags: tagsMap.get(bullet.id) || []
           }))
         });
       }
 
-      const frontendExperiences = experiencesWithBullets.map(transformToFrontendFormat);
+      const frontendExperiences = experiencesWithBullets.map(experience => transformToFrontendFormat(experience, false));
       
       const response: FrontendExperienceSection = {
         items: frontendExperiences
@@ -142,17 +177,22 @@ export default function initExperienceRoutes(db: Database) {
           experience.id, resumeId
         );
         
+        // Fetch tags for all bullets in this experience
+        const bulletIds = bullets.map(b => b.id);
+        const tagsMap = await fetchBulletTags(db, bulletIds);
+        
         experiencesWithBullets.push({
           ...experience,
           current: !experience.end_date,
           bullets: bullets.map(bullet => ({
             ...bullet,
-            is_selected: bullet.is_selected !== null ? bullet.is_selected : true
+            is_selected: bullet.is_selected !== null ? bullet.is_selected : true,
+            tags: tagsMap.get(bullet.id) || []
           }))
         });
       }
 
-      const frontendExperiences = experiencesWithBullets.map(transformToFrontendFormat);
+      const frontendExperiences = experiencesWithBullets.map(experience => transformToFrontendFormat(experience, true));
       
       const response: FrontendExperienceSection = {
         items: frontendExperiences
@@ -202,7 +242,7 @@ export default function initExperienceRoutes(db: Database) {
         for (let i = 0; i < bullets.length; i++) {
           const bullet = bullets[i];
           if (bullet.content && bullet.content.trim()) {
-            await db.run(
+            const bulletResult = await db.run(
               `INSERT INTO bullet_point (
                 experience_id, content, order_num, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?)`,
@@ -212,6 +252,17 @@ export default function initExperienceRoutes(db: Database) {
               new Date().toISOString(),
               new Date().toISOString()
             );
+
+            // Insert bullet tags if provided
+            if (bullet.tags && bullet.tags.length > 0) {
+              for (const tag of bullet.tags) {
+                await db.run(
+                  `INSERT OR IGNORE INTO bullet_tag (tag_id, bullet_id) VALUES (?, ?)`,
+                  tag.id,
+                  bulletResult.lastID
+                );
+              }
+            }
           }
         }
       }
@@ -360,14 +411,16 @@ export default function initExperienceRoutes(db: Database) {
         experienceId
       );
 
-      // Update bullet points
+      // Delete old bullet points and their tags
+      await db.run("DELETE FROM bullet_tag WHERE bullet_id IN (SELECT id FROM bullet_point WHERE experience_id = ?)", experienceId);
       await db.run("DELETE FROM bullet_point WHERE experience_id = ?", experienceId);
 
       if (bullets.length > 0) {
         for (let i = 0; i < bullets.length; i++) {
           const bullet = bullets[i];
           if (bullet.content && bullet.content.trim()) {
-            await db.run(
+            // Insert bullet point
+            const bulletResult = await db.run(
               `INSERT INTO bullet_point (
                 experience_id, content, order_num, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?)`,
@@ -377,6 +430,17 @@ export default function initExperienceRoutes(db: Database) {
               new Date().toISOString(),
               new Date().toISOString()
             );
+
+            // Insert bullet tags if provided
+            if (bullet.tags && bullet.tags.length > 0) {
+              for (const tag of bullet.tags) {
+                await db.run(
+                  `INSERT OR IGNORE INTO bullet_tag (tag_id, bullet_id) VALUES (?, ?)`,
+                  tag.id,
+                  bulletResult.lastID
+                );
+              }
+            }
           }
         }
       }

@@ -35,8 +35,8 @@ const ExperiencePreview = ({ section }: ExperiencePreviewProps) => {
 
             {item.bullets && item.bullets.length > 0 && (
               <ul className="list-disc list-outside ml-5 mt-2 text-sm text-gray-700">
-                {item.bullets.map((bullet: string, index: number) => (
-                  bullet.trim() ? <li key={index}>{bullet}</li> : null
+                {item.bullets.map((bullet, index: number) => (
+                  bullet.content.trim() ? <li key={index}>{bullet.content}</li> : null
                 ))}
               </ul>
             )}

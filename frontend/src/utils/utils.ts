@@ -22,6 +22,15 @@ export function formatDate(dateString: string): string {
       }).format(date);
     }
     
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      const [year, month, day] = dateString.split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      return new Intl.DateTimeFormat('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+      }).format(date);
+    }
+    
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
       return dateString;

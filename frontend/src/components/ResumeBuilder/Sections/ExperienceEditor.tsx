@@ -67,7 +67,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
       startDate: '',
       endDate: '',
       current: true,
-      bullets: ['']
+      bullets: [{ content: '', tags: [] }]
     };
     
     const updatedContent: ExperienceSection = {
@@ -165,7 +165,10 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
 
     const updatedItems = [...experienceData.items];
     const updatedBullets = [...updatedItems[experienceIndex].bullets];
-    updatedBullets[bulletIndex] = value;
+    updatedBullets[bulletIndex] = {
+      ...updatedBullets[bulletIndex],
+      content: value
+    };
     
     updatedItems[experienceIndex] = {
       ...updatedItems[experienceIndex],
@@ -197,7 +200,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
     const updatedItems = [...experienceData.items];
     updatedItems[experienceIndex] = {
       ...updatedItems[experienceIndex],
-      bullets: [...updatedItems[experienceIndex].bullets, '']
+      bullets: [...updatedItems[experienceIndex].bullets, { content: '', tags: [] }]
     };
     
     const updatedContent: ExperienceSection = {
@@ -359,7 +362,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                         </p>
                         <div className="mt-2">
                           {experience.bullets.slice(0, 2).map((bullet, index) => (
-                            <p key={index} className="text-sm text-gray-600">• {bullet}</p>
+                            <p key={index} className="text-sm text-gray-600">• {bullet.content}</p>
                           ))}
                           {experience.bullets.length > 2 && (
                             <p className="text-xs text-gray-400">
@@ -433,7 +436,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {item.bullets.some(bullet => bullet.trim() === '') && (
+                {item.bullets.some(bullet => bullet.content.trim() === '') && (
                   <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
                     (unused)
                   </span>
@@ -560,7 +563,7 @@ const ExperienceEditor = ({ section }: ExperienceEditorProps) => {
                       <span className="text-gray-400 mt-2.5 text-xs">•</span>
                       <input
                         type="text"
-                        value={bullet}
+                        value={bullet.content}
                         onChange={(e) => updateBullet(index, bulletIndex, e.target.value)}
                         disabled={item.fromBank}
                         className={`flex-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 ${
