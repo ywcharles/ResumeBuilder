@@ -28,7 +28,7 @@ export const transformExperienceItemToFormData = (item: ExperienceItem): Experie
   startDate: item.startDate,
   endDate: item.endDate,
   current: item.current,
-  bullets: item.bullets.map(bullet => ({ content: bullet }))
+  bullets: item.bullets.map(bullet => ({ content: bullet.content }))
 });
 
 export const transformFormDataToExperienceItem = (formData: ExperienceFormData, id?: string): ExperienceItem => ({
@@ -40,8 +40,11 @@ export const transformFormDataToExperienceItem = (formData: ExperienceFormData, 
   endDate: formData.current ? '' : formData.endDate,
   current: formData.current,
   bullets: formData.bullets
-    .map(bullet => bullet.content.trim())
-    .filter(content => content.length > 0)
+    .filter(bullet => bullet.content.trim().length > 0)
+    .map(bullet => ({
+      content: bullet.content.trim(),
+      tags: []
+    }))
 });
 
 const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
