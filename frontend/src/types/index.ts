@@ -61,7 +61,7 @@ export interface ExperienceItem {
   startDate: string;
   endDate: string;
   current: boolean;
-  bullets: string[];
+  bullets: { content: string; tags: { id: number; name: string }[] }[];
   fromBank?: boolean;
 }
 
