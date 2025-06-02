@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import ExperienceFormModal, { 
   ExperienceFormData,
@@ -37,9 +37,32 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   const [expanded, setExpanded] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [formData, setFormData] = useState<ExperienceFormData>(
-    transformExperienceItemToFormData(experience)
-  );
+  
+  // Deep clone the experience object for initial form data to prevent reference sharing
+  const getInitialFormData = () => {
+    const clonedExperience: ExperienceItem = {
+      ...experience,
+      bullets: experience.bullets.map(bullet => ({
+        ...bullet,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
+    };
+    return transformExperienceItemToFormData(clonedExperience);
+  };
+  
+  const [formData, setFormData] = useState<ExperienceFormData>(() => getInitialFormData());
+
+  // Update form data when experience prop changes
+  useEffect(() => {
+    const clonedExperience: ExperienceItem = {
+      ...experience,
+      bullets: experience.bullets.map(bullet => ({
+        ...bullet,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
+    };
+    setFormData(transformExperienceItemToFormData(clonedExperience));
+  }, [experience]);
 
   const toggleExpand = () => setExpanded(!expanded);
 
@@ -58,8 +81,17 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
   };
 
   const handleEditOpen = () => {
-    // Refresh form data when opening edit modal
-    setFormData(transformExperienceItemToFormData(experience));
+    // Deep clone the experience object to ensure no reference sharing
+    const clonedExperience: ExperienceItem = {
+      ...experience,
+      bullets: experience.bullets.map(bullet => ({
+        ...bullet,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
+    };
+    
+    // Transform the deeply cloned experience to form data
+    setFormData(transformExperienceItemToFormData(clonedExperience));
     setIsEditOpen(true);
   };
 

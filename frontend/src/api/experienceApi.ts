@@ -33,7 +33,7 @@ function transformFromDatabase(dbExperience: DatabaseExperienceItem): Experience
       .filter(bullet => bullet.content && bullet.content.trim())
       .map(bullet => ({
         content: bullet.content,
-        tags: bullet.tags || []
+        tags: bullet.tags ? bullet.tags.map(tag => ({ ...tag })) : []
       }))
   };
 }
@@ -49,7 +49,11 @@ function transformToDatabase(frontendExperience: ExperienceItem, userId: number,
     endDate: frontendExperience.current ? null : frontendExperience.endDate,
     bullets: frontendExperience.bullets
       .filter(bullet => bullet.content && bullet.content.trim())
-      .map(bullet => ({ content: bullet.content, is_selected: true }))
+      .map(bullet => ({ 
+        content: bullet.content, 
+        is_selected: true,
+        tags: bullet.tags.map(tag => ({ ...tag }))
+      }))
   };
 }
 
@@ -115,7 +119,11 @@ export const experienceApi = {
         endDate: experienceData.current ? null : experienceData.endDate,
         bullets: experienceData.bullets
           .filter(bullet => bullet.content && bullet.content.trim())
-          .map(bullet => ({ content: bullet.content, is_selected: true }))
+          .map(bullet => ({ 
+            content: bullet.content, 
+            is_selected: true,
+            tags: bullet.tags.map(tag => ({ ...tag }))
+          }))
       };
       
       const response = await api.put(`/api/experiences/${experienceId}`, updateData);

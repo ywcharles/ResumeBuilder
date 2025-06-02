@@ -56,7 +56,7 @@ function transformToFrontendFormat(dbExperience: ExperienceWithBullets): Fronten
       .filter(bullet => bullet.content && bullet.content.trim())
       .map(bullet => ({
         content: bullet.content,
-        tags: bullet.tags || []
+        tags: bullet.tags ? bullet.tags.map(tag => ({ id: tag.id, name: tag.name })) : []
       }))
   };
 }
@@ -80,7 +80,8 @@ async function fetchBulletTags(db: Database, bulletIds: number[]): Promise<Map<n
     if (!tagsMap.has(bullet_id)) {
       tagsMap.set(bullet_id, []);
     }
-    tagsMap.get(bullet_id)!.push({ id, name });
+    // Create independent tag objects to prevent reference sharing
+    tagsMap.get(bullet_id)!.push({ id: id, name: name });
   });
   
   return tagsMap;
@@ -241,7 +242,7 @@ export default function initExperienceRoutes(db: Database) {
         for (let i = 0; i < bullets.length; i++) {
           const bullet = bullets[i];
           if (bullet.content && bullet.content.trim()) {
-            await db.run(
+            const bulletResult = await db.run(
               `INSERT INTO bullet_point (
                 experience_id, content, order_num, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?)`,
@@ -251,6 +252,17 @@ export default function initExperienceRoutes(db: Database) {
               new Date().toISOString(),
               new Date().toISOString()
             );
+
+            // Insert bullet tags if provided
+            if (bullet.tags && bullet.tags.length > 0) {
+              for (const tag of bullet.tags) {
+                await db.run(
+                  `INSERT OR IGNORE INTO bullet_tag (tag_id, bullet_id) VALUES (?, ?)`,
+                  tag.id,
+                  bulletResult.lastID
+                );
+              }
+            }
           }
         }
       }
@@ -399,14 +411,16 @@ export default function initExperienceRoutes(db: Database) {
         experienceId
       );
 
-      // Update bullet points
+      // Delete old bullet points and their tags
+      await db.run("DELETE FROM bullet_tag WHERE bullet_id IN (SELECT id FROM bullet_point WHERE experience_id = ?)", experienceId);
       await db.run("DELETE FROM bullet_point WHERE experience_id = ?", experienceId);
 
       if (bullets.length > 0) {
         for (let i = 0; i < bullets.length; i++) {
           const bullet = bullets[i];
           if (bullet.content && bullet.content.trim()) {
-            await db.run(
+            // Insert bullet point
+            const bulletResult = await db.run(
               `INSERT INTO bullet_point (
                 experience_id, content, order_num, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?)`,
@@ -416,6 +430,17 @@ export default function initExperienceRoutes(db: Database) {
               new Date().toISOString(),
               new Date().toISOString()
             );
+
+            // Insert bullet tags if provided
+            if (bullet.tags && bullet.tags.length > 0) {
+              for (const tag of bullet.tags) {
+                await db.run(
+                  `INSERT OR IGNORE INTO bullet_tag (tag_id, bullet_id) VALUES (?, ?)`,
+                  tag.id,
+                  bulletResult.lastID
+                );
+              }
+            }
           }
         }
       }
