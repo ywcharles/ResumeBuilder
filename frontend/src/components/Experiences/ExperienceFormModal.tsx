@@ -50,31 +50,31 @@ const formatDateForDateInput = (dateString: string): string => {
 };
 
 export const transformExperienceItemToFormData = (item: ExperienceItem): ExperienceFormData => ({
-  companyName: item.company,
-  position: item.position,
-  location: item.location,
-  startDate: formatDateForDateInput(item.startDate),
-  endDate: formatDateForDateInput(item.endDate),
-  current: item.current,
-  bullets: item.bullets.map(bullet => ({ 
-    content: bullet.content, 
-    tags: bullet.tags.map(tag => ({ ...tag })) // Deep clone tags to prevent reference sharing
+  companyName: item.company || '',
+  position: item.position || '',
+  location: item.location || '',
+  startDate: formatDateForDateInput(item.startDate || ''),
+  endDate: formatDateForDateInput(item.endDate || ''),
+  current: item.current || false,
+  bullets: (item.bullets || []).map(bullet => ({ 
+    content: bullet?.content || '', 
+    tags: (bullet?.tags || []).map(tag => ({ ...tag }))
   }))
 });
 
 export const transformFormDataToExperienceItem = (formData: ExperienceFormData, id?: string): ExperienceItem => ({
   id: id || '',
-  company: formData.companyName,
-  position: formData.position,
-  location: formData.location,
-  startDate: formData.startDate,
-  endDate: formData.current ? '' : formData.endDate,
-  current: formData.current,
-  bullets: formData.bullets
-    .filter(bullet => bullet.content.trim().length > 0)
+  company: formData.companyName || '',
+  position: formData.position || '',
+  location: formData.location || '',
+  startDate: formData.startDate || '',
+  endDate: formData.current ? '' : (formData.endDate || ''),
+  current: formData.current || false,
+  bullets: (formData.bullets || [])
+    .filter(bullet => bullet?.content?.trim().length > 0)
     .map(bullet => ({
       content: bullet.content.trim(),
-      tags: bullet.tags.map(tag => ({ ...tag })) // Deep clone tags for consistency
+      tags: (bullet?.tags || []).map(tag => ({ ...tag }))
     }))
 });
 
@@ -122,26 +122,26 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
   };
 
   const handleBulletPointChange = (index: number, value: string) => {
-    const newBullets = [...formData.bullets];
+    const newBullets = [...(formData.bullets || [])];
     newBullets[index] = { ...newBullets[index], content: value };
     setFormData(prev => ({ ...prev, bullets: newBullets }));
   };
 
   const addBulletPoint = () => {
-    setFormData(prev => ({ ...prev, bullets: [...prev.bullets, { content: '', tags: [] }] }));
+    setFormData(prev => ({ ...prev, bullets: [...(prev.bullets || []), { content: '', tags: [] }] }));
   };
 
   const removeBulletPoint = (index: number) => {
-    if (formData.bullets.length > 1) {
-      const updatedBullets = [...formData.bullets];
+    if ((formData.bullets || []).length > 1) {
+      const updatedBullets = [...(formData.bullets || [])];
       updatedBullets.splice(index, 1);
       setFormData(prev => ({ ...prev, bullets: updatedBullets }));
     }
   };
 
   const addTagToBullet = (bulletIndex: number, tag: Tag) => {
-    const newBullets = [...formData.bullets];
-    const existingTags = newBullets[bulletIndex].tags;
+    const newBullets = [...(formData.bullets || [])];
+    const existingTags = newBullets[bulletIndex]?.tags || [];
     
     // Check if tag is already added
     if (!existingTags.some(existingTag => existingTag.id === tag.id)) {
@@ -154,10 +154,10 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
   };
 
   const removeTagFromBullet = (bulletIndex: number, tagId: number) => {
-    const newBullets = [...formData.bullets];
+    const newBullets = [...(formData.bullets || [])];
     newBullets[bulletIndex] = {
       ...newBullets[bulletIndex],
-      tags: newBullets[bulletIndex].tags.filter(tag => tag.id !== tagId)
+      tags: (newBullets[bulletIndex]?.tags || []).filter(tag => tag.id !== tagId)
     };
     setFormData(prev => ({ ...prev, bullets: newBullets }));
   };
@@ -255,17 +255,17 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
 
           <div className="mb-4">
             <label className="block font-medium mb-2">Bullet Points</label>
-            {formData.bullets.map((bullet, i) => (
+            {(formData.bullets || []).map((bullet, i) => (
               <div key={i} className="border border-gray-200 rounded p-3 mb-3 bg-gray-50">
                 <div className="flex gap-2 items-start mb-2">
                   <input
                     type="text"
-                    value={bullet.content}
+                    value={bullet?.content || ''}
                     onChange={(e) => handleBulletPointChange(i, e.target.value)}
                     className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-sky-500"
                     placeholder={`Bullet Point ${i + 1}`}
                   />
-                  {formData.bullets.length > 1 && (
+                  {(formData.bullets || []).length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeBulletPoint(i)}
@@ -278,9 +278,9 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
                 </div>
                 
                 {/* Current tags for this bullet */}
-                {bullet.tags.length > 0 && (
+                {(bullet?.tags || []).length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
-                    {bullet.tags.map((tag) => (
+                    {(bullet?.tags || []).map((tag) => (
                       <span
                         key={tag.id}
                         className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
@@ -300,8 +300,8 @@ const ExperienceFormModal: React.FC<ExperienceFormModalProps> = ({
 
                 {/* Available tags to add */}
                 <div className="flex flex-wrap gap-1 mb-2">
-                  {availableTags
-                    .filter(tag => !bullet.tags.some(bulletTag => bulletTag.id === tag.id))
+                  {(availableTags || [])
+                    .filter(tag => !(bullet?.tags || []).some(bulletTag => bulletTag.id === tag.id))
                     .map((tag) => (
                       <button
                         key={tag.id}
