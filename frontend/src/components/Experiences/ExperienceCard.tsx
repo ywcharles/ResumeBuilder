@@ -116,9 +116,25 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
       {expanded && (
         <div className="mt-4 border-t pt-3">
           {experience.bullets.length > 0 ? (
-            <ul className="list-disc pl-5 text-sm space-y-1">
+            <ul className="list-disc pl-5 text-sm space-y-3">
               {experience.bullets.map((bullet, index) => (
-                <li key={index} className="text-gray-700">{bullet}</li>
+                <li key={index} className="text-gray-700">
+                  <div className="space-y-2">
+                    <span>{bullet.content}</span>
+                    {bullet.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {bullet.tags.map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </li>
               ))}
             </ul>
           ) : (
