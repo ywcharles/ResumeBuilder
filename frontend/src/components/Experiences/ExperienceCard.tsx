@@ -5,6 +5,7 @@ import ExperienceFormModal, {
   transformExperienceItemToFormData 
 } from "./ExperienceFormModal";
 import { ExperienceItem } from "../../types";
+import { formatDate } from "../../utils/utils";
 
 interface ExperienceCardProps {
   experience: ExperienceItem;
@@ -12,21 +13,6 @@ interface ExperienceCardProps {
   onDelete?: (id: string) => void;
   loading?: boolean;
 }
-
-// Helper function to format dates for display
-const formatDisplayDate = (dateString: string): string => {
-  if (!dateString) return "";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-    });
-  } catch (error) {
-    console.warn("Could not parse date:", dateString);
-    return dateString;
-  }
-};
 
 const ExperienceCard: React.FC<ExperienceCardProps> = ({ 
   experience, 
@@ -95,8 +81,8 @@ const ExperienceCard: React.FC<ExperienceCardProps> = ({
     setIsEditOpen(true);
   };
 
-  const displayStartDate = formatDisplayDate(experience.startDate);
-  const displayEndDate = experience.current ? "Present" : formatDisplayDate(experience.endDate);
+  const displayStartDate = formatDate(experience.startDate);
+  const displayEndDate = experience.current ? "Present" : formatDate(experience.endDate);
 
   return (
     <div className="relative bg-gray-50 w-full p-4 rounded shadow hover:bg-gray-100 transition-colors">
