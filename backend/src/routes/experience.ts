@@ -37,13 +37,14 @@ interface FrontendExperience {
   endDate: string;
   current: boolean;
   bullets: { content: string; tags: { id: number; name: string }[] }[];
+  fromBank?: boolean;
 }
 
 interface FrontendExperienceSection {
   items: FrontendExperience[];
 }
 
-function transformToFrontendFormat(dbExperience: ExperienceWithBullets): FrontendExperience {
+function transformToFrontendFormat(dbExperience: ExperienceWithBullets, fromBank: boolean = false): FrontendExperience {
   return {
     id: dbExperience.id.toString(),
     company: dbExperience.company_name,
@@ -51,13 +52,12 @@ function transformToFrontendFormat(dbExperience: ExperienceWithBullets): Fronten
     location: dbExperience.location,
     startDate: dbExperience.start_date,
     endDate: dbExperience.end_date || '',
-    current: !dbExperience.end_date,
-    bullets: dbExperience.bullets
-      .filter(bullet => bullet.content && bullet.content.trim())
-      .map(bullet => ({
-        content: bullet.content,
-        tags: bullet.tags ? bullet.tags.map(tag => ({ id: tag.id, name: tag.name })) : []
-      }))
+    current: dbExperience.current,
+    bullets: dbExperience.bullets.map(bullet => ({
+      content: bullet.content,
+      tags: bullet.tags || []
+    })),
+    fromBank
   };
 }
 
@@ -131,7 +131,7 @@ export default function initExperienceRoutes(db: Database) {
         });
       }
 
-      const frontendExperiences = experiencesWithBullets.map(transformToFrontendFormat);
+      const frontendExperiences = experiencesWithBullets.map(experience => transformToFrontendFormat(experience, false));
       
       const response: FrontendExperienceSection = {
         items: frontendExperiences
@@ -192,7 +192,7 @@ export default function initExperienceRoutes(db: Database) {
         });
       }
 
-      const frontendExperiences = experiencesWithBullets.map(transformToFrontendFormat);
+      const frontendExperiences = experiencesWithBullets.map(experience => transformToFrontendFormat(experience, true));
       
       const response: FrontendExperienceSection = {
         items: frontendExperiences
